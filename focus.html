@@ -1275,6 +1275,22 @@ window.addEventListener('storage',e=>{
   if(e.key===K_CATS){ cats=getCats(); renderCatBar(); drawCharts(); renderSessions(); }
   if(e.key===K_SESS){ drawCharts(); renderSessions(); updateTodayCard(); }
 });
+
+// ── Cloud sync ──
+if(typeof initCloudSync === 'function') {
+  initCloudSync({
+    appKey: 'focus',
+    syncedKeys: [K_CATS, K_SESS],
+    onApplied: () => {
+      cats = ensureDefaults();
+      renderCatBar();
+      renderTimerControls();
+      renderSessions();
+      drawCharts();
+      updateTodayCard();
+    }
+  });
+}
 </script>
 </body>
 </html>
