@@ -130,6 +130,17 @@ main {
   -webkit-tap-highlight-color: transparent; transition: color 0.15s;
 }
 .cat-chip-add:hover { color: var(--text-secondary); }
+.cat-edit-btn {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-tertiary); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: all 0.18s var(--ease-spring);
+}
+.cat-edit-btn:hover { background: rgba(255,255,255,0.07); color: var(--text-secondary); }
+.cat-edit-btn.done {
+  background: rgba(255,255,255,0.08); border-color: var(--border-strong); color: var(--text-primary);
+}
 
 /* ── Category sheet ── */
 .cat-sheet {
@@ -679,28 +690,52 @@ function setHsvFromHex(hex) {
 let cats = ensureDefaults();
 let activeCatId = cats.find(c=>!c.archived)?.id || 'cat_work';
 
+let editMode = false;
+
 function renderCatBar() {
   const bar=document.getElementById('catBar');
   bar.innerHTML='';
-  cats.filter(c=>!c.archived).forEach(cat=>{
+  const activeCats=cats.filter(c=>!c.archived);
+  const canDelete=activeCats.length>1;
+
+  activeCats.forEach(cat=>{
     const chip=document.createElement('button');
-    chip.className='cat-chip'+(cat.id===activeCatId?' active':'');
+    chip.className='cat-chip'+(cat.id===activeCatId&&!editMode?' active':'');
     chip.textContent=cat.name;
-    if(cat.id===activeCatId){
+    if(cat.id===activeCatId&&!editMode){
       chip.style.background=hexToRgba(cat.color,0.15);
       chip.style.borderColor=hexToRgba(cat.color,0.4);
       chip.style.color=cat.color;
     }
-    let pressTimer;
-    chip.addEventListener('pointerdown',()=>{ pressTimer=setTimeout(()=>showCtxMenu(cat,chip),520); });
-    chip.addEventListener('pointerup',()=>clearTimeout(pressTimer));
-    chip.addEventListener('pointercancel',()=>clearTimeout(pressTimer));
-    chip.addEventListener('click',()=>{ activeCatId=cat.id; renderCatBar(); renderTimerControls(); });
+    if(editMode){
+      chip.style.opacity='0.8';
+      chip.addEventListener('click',()=>openCatSheet(cat));
+      if(canDelete){
+        const x=document.createElement('button');
+        x.className='chip-x'; x.textContent='×';
+        x.addEventListener('click',e=>{e.stopPropagation();deleteCat(cat.id);});
+        chip.appendChild(x);
+      }
+    } else {
+      chip.addEventListener('click',()=>{ activeCatId=cat.id; renderCatBar(); renderTimerControls(); });
+    }
     bar.appendChild(chip);
   });
+
+  // Pencil toggle button
+  const pencilBtn=document.createElement('button');
+  pencilBtn.className='cat-edit-btn'+(editMode?' done':'');
+  pencilBtn.title=editMode?'Done editing':'Edit categories';
+  pencilBtn.innerHTML=editMode
+    ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 10l8-8M2 10h3l5-5-3-3-5 5v3z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8.5 1.5a1.414 1.414 0 0 1 2 2L3.5 10.5H1v-2.5L8.5 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  pencilBtn.addEventListener('click',()=>{ editMode=!editMode; renderCatBar(); });
+  bar.appendChild(pencilBtn);
+
+  // + New
   const add=document.createElement('button');
   add.className='cat-chip-add'; add.textContent='+ New';
-  add.addEventListener('click',()=>openCatSheet(null));
+  add.addEventListener('click',()=>{ editMode=false; openCatSheet(null); });
   bar.appendChild(add);
 }
 
@@ -714,25 +749,10 @@ function deleteCat(id) {
   }
   saveCats(cats);
   if(activeCatId===id) activeCatId=cats.find(c=>!c.archived)?.id||'cat_work';
+  // stay in edit mode so user can keep deleting
   renderCatBar(); renderTimerControls();
 }
 
-function showCtxMenu(cat,el) {
-  const menu=document.getElementById('ctxMenu');
-  menu.style.display='block';
-  const r=el.getBoundingClientRect();
-  // Only hide Delete when this cat is the sole active one (deleting would just restore it)
-  const activeCats=cats.filter(c=>!c.archived);
-  const canDelete=activeCats.length>1;
-  menu.innerHTML=`<div class="ctx-menu" style="position:fixed;top:${r.bottom+6}px;left:${Math.min(r.left,window.innerWidth-170)}px">
-    <div class="ctx-item" id="ctxEdit">Edit</div>
-    ${canDelete?'<div class="ctx-item danger" id="ctxDel">Delete</div>':''}
-  </div>`;
-  document.getElementById('ctxEdit')?.addEventListener('click',()=>{ openCatSheet(cat); closeCtxMenu(); });
-  document.getElementById('ctxDel')?.addEventListener('click',()=>{ deleteCat(cat.id); closeCtxMenu(); });
-  setTimeout(()=>document.addEventListener('click',closeCtxMenu,{once:true}),10);
-}
-function closeCtxMenu(){ document.getElementById('ctxMenu').style.display='none'; }
 
 // Cat sheet
 let catSheetOpen=false;
