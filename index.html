@@ -265,23 +265,41 @@ body::after {
   letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-tertiary);
 }
-.sched-field { margin-bottom: 14px; }
-.sched-field label {
-  display: block;
+.sched-drums { display: flex; gap: 10px; margin: 0 0 0; }
+.sched-drum-col { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+.sched-drum-label {
   font-size: 10px; font-weight: 700;
   letter-spacing: 0.10em; text-transform: uppercase;
-  color: var(--text-tertiary); margin-bottom: 7px;
+  color: var(--text-tertiary); text-align: center;
 }
-.sched-field input[type="time"] {
-  width: 100%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 10px; color: var(--text-primary);
-  font-family: var(--font-mono); font-size: 18px; font-weight: 600;
-  padding: 10px 14px; outline: none; color-scheme: dark;
-  transition: border-color 0.15s;
+.sched-drum-wrap {
+  position: relative; height: 200px; overflow: hidden;
+  border-radius: 10px; cursor: grab; user-select: none;
+  -webkit-user-select: none; touch-action: none;
 }
-.sched-field input[type="time"]:focus { border-color: rgba(255,255,255,0.24); }
+.sched-drum-wrap:active { cursor: grabbing; }
+.sched-drum-inner { position: absolute; left: 0; right: 0; top: 0; will-change: transform; }
+.sched-drum-item {
+  height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255,255,255,0.22);
+}
+.sched-drum-item.active { color: #FAFAFA; }
+.sched-drum-sel {
+  position: absolute; pointer-events: none; z-index: 1;
+  top: 50%; left: 0; right: 0; height: 44px;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.065);
+  border-top: 0.5px solid rgba(255,255,255,0.13);
+  border-bottom: 0.5px solid rgba(255,255,255,0.13);
+}
+.sched-drum-ft, .sched-drum-fb {
+  position: absolute; pointer-events: none; z-index: 2; left: 0; right: 0;
+}
+.sched-drum-ft { top: 0; height: 78px; background: linear-gradient(to bottom, #111213 25%, transparent); }
+.sched-drum-fb { bottom: 0; height: 78px; background: linear-gradient(to top, #111213 25%, transparent); }
 .sched-actions { display: flex; gap: 8px; margin-top: 20px; }
 .sched-save {
   flex: 1; background: rgba(107,227,164,0.12);
@@ -863,13 +881,25 @@ body::after {
 <div class="sched-modal-bg" id="schedModalBg" role="dialog" aria-modal="true" aria-label="Sleep schedule settings">
   <div class="sched-modal">
     <div class="sched-modal-title">Sleep Schedule</div>
-    <div class="sched-field">
-      <label for="schedWake">Wake up</label>
-      <input type="time" id="schedWake" step="3600">
-    </div>
-    <div class="sched-field">
-      <label for="schedSleep">Bedtime</label>
-      <input type="time" id="schedSleep" step="3600">
+    <div class="sched-drums">
+      <div class="sched-drum-col">
+        <div class="sched-drum-label">Wake Up</div>
+        <div class="sched-drum-wrap" id="schedWakeDrum">
+          <div class="sched-drum-sel"></div>
+          <div class="sched-drum-inner" id="schedWakeInner"></div>
+          <div class="sched-drum-ft"></div>
+          <div class="sched-drum-fb"></div>
+        </div>
+      </div>
+      <div class="sched-drum-col">
+        <div class="sched-drum-label">Bedtime</div>
+        <div class="sched-drum-wrap" id="schedSleepDrum">
+          <div class="sched-drum-sel"></div>
+          <div class="sched-drum-inner" id="schedSleepInner"></div>
+          <div class="sched-drum-ft"></div>
+          <div class="sched-drum-fb"></div>
+        </div>
+      </div>
     </div>
     <div class="sched-actions">
       <button class="sched-cancel" id="schedCancel">Cancel</button>
@@ -1657,21 +1687,101 @@ body::after {
     loadTomorrow
   );
 
-  // ---------- Schedule modal ----------
+  // ---------- Schedule modal (drum picker) ----------
   function fmtHour(h) {
     const h24 = h % 24;
     const h12 = h24 % 12 || 12;
     return h12 + ':00 ' + (h24 < 12 ? 'AM' : 'PM');
   }
+
+  function _makeDrum(wrapId, innerId, initHour) {
+    const ITEM_H = 44, DRUM_H = 200, CTR = 100;
+    const wrap = document.getElementById(wrapId);
+    const inner = document.getElementById(innerId);
+    let curIdx = initHour % 24;
+    let ty = 0, isDrag = false, startY = 0, startTy = 0;
+    let lastY = 0, lastT = 0, vel = 0;
+
+    for (let i = 0; i < 24; i++) {
+      const h12 = i % 12 || 12, ap = i < 12 ? 'AM' : 'PM';
+      const el = document.createElement('div');
+      el.className = 'sched-drum-item';
+      el.textContent = h12 + ' ' + ap;
+      inner.appendChild(el);
+    }
+
+    function getTy(idx) { return CTR - idx * ITEM_H - ITEM_H / 2; }
+
+    function setTy(y, anim) {
+      inner.style.transition = anim ? 'transform 0.32s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none';
+      inner.style.transform = 'translateY(' + y + 'px)';
+      ty = y;
+      const items = inner.children;
+      for (let j = 0; j < items.length; j++) {
+        const itemCtr = y + j * ITEM_H + ITEM_H / 2;
+        items[j].classList.toggle('active', Math.abs(itemCtr - CTR) < ITEM_H / 2);
+      }
+    }
+
+    function snap(fromTy) {
+      const rawIdx = (CTR - ITEM_H / 2 - fromTy) / ITEM_H;
+      curIdx = Math.max(0, Math.min(23, Math.round(rawIdx)));
+      setTy(getTy(curIdx), true);
+    }
+
+    function onStart(y) {
+      isDrag = true; startY = y; startTy = ty;
+      lastY = y; lastT = Date.now(); vel = 0;
+      inner.style.transition = 'none';
+    }
+    function onMove(y) {
+      if (!isDrag) return;
+      const now = Date.now(), dt = now - lastT;
+      if (dt > 0) vel = (y - lastY) / dt;
+      lastY = y; lastT = now;
+      setTy(startTy + (y - startY), false);
+    }
+    function onEnd() {
+      if (!isDrag) return;
+      isDrag = false;
+      snap(ty + vel * 100);
+    }
+
+    wrap.addEventListener('touchstart', e => onStart(e.touches[0].clientY), {passive: true});
+    wrap.addEventListener('touchmove', e => { e.preventDefault(); onMove(e.touches[0].clientY); }, {passive: false});
+    wrap.addEventListener('touchend', onEnd, {passive: true});
+    wrap.addEventListener('mousedown', e => {
+      e.preventDefault();
+      onStart(e.clientY);
+      const onMM = e2 => onMove(e2.clientY);
+      const onMU = () => { onEnd(); window.removeEventListener('mousemove', onMM); };
+      window.addEventListener('mousemove', onMM);
+      window.addEventListener('mouseup', onMU, {once: true});
+    });
+
+    setTy(getTy(curIdx), false);
+
+    return {
+      getHour() { return curIdx; },
+      setHour(h) { curIdx = h % 24; setTy(getTy(curIdx), true); }
+    };
+  }
+
+  let _wakeDrum = null, _sleepDrum = null;
+
   function openSchedModal() {
     const bg = document.getElementById('schedModalBg');
     if (!bg) return;
-    const wH = String(WAKE_HOUR).padStart(2, '0');
-    const sH = String(SLEEP_HOUR % 24).padStart(2, '0');
-    document.getElementById('schedWake').value  = wH + ':00';
-    document.getElementById('schedSleep').value = sH + ':00';
     bg.classList.add('show');
     document.body.classList.add('topbar-modal-open');
+    const wH = WAKE_HOUR % 24, sH = SLEEP_HOUR % 24;
+    if (!_wakeDrum) {
+      _wakeDrum  = _makeDrum('schedWakeDrum',  'schedWakeInner',  wH);
+      _sleepDrum = _makeDrum('schedSleepDrum', 'schedSleepInner', sH);
+    } else {
+      _wakeDrum.setHour(wH);
+      _sleepDrum.setHour(sH);
+    }
   }
   function closeSchedModal() {
     const bg = document.getElementById('schedModalBg');
@@ -1679,11 +1789,9 @@ body::after {
     document.body.classList.remove('topbar-modal-open');
   }
   function saveSchedModal() {
-    const wVal = document.getElementById('schedWake').value;
-    const sVal = document.getElementById('schedSleep').value;
-    const wH = parseInt(wVal, 10);
-    let   sH = parseInt(sVal, 10);
-    if (isNaN(wH) || isNaN(sH)) { closeSchedModal(); return; }
+    if (!_wakeDrum || !_sleepDrum) { closeSchedModal(); return; }
+    let wH = _wakeDrum.getHour();
+    let sH = _sleepDrum.getHour();
     if (sH === 0) sH = 24;
     if (sH <= wH) sH = wH + 1;
     WAKE_HOUR = wH; SLEEP_HOUR = sH;
