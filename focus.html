@@ -24,6 +24,7 @@
   --text-quaternary: #4D4B47;
   --accent: #6BE3A4;
   --accent-glow: rgba(107,227,164,0.35);
+  --cat-color: #6BE3A4;
   --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
@@ -117,8 +118,8 @@ main {
 /* ── Buttons ── */
 .btn-primary {
   width: 100%; padding: 12px;
-  background: rgba(107,227,164,0.12);
-  color: #6BE3A4; border: 1px solid rgba(107,227,164,0.28); border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--cat-color) 12%, transparent);
+  color: var(--cat-color); border: 1px solid color-mix(in srgb, var(--cat-color) 28%, transparent); border-radius: var(--radius-md);
   font-family: var(--font); font-size: 14px; font-weight: 700;
   cursor: pointer; -webkit-tap-highlight-color: transparent;
   transition: opacity 0.15s, transform 0.15s var(--ease-spring);
@@ -239,8 +240,8 @@ main {
   transition: all 0.2s var(--ease-spring);
 }
 .preset-card.active {
-  background: rgba(107,227,164,0.08);
-  border-color: rgba(107,227,164,0.28);
+  background: color-mix(in srgb, var(--cat-color) 8%, transparent);
+  border-color: color-mix(in srgb, var(--cat-color) 28%, transparent);
 }
 .preset-name {
   display: block; font-size: 13px; font-weight: 700;
@@ -282,19 +283,19 @@ main {
   width: 100%; height: 100%;
   transform: rotate(-90deg);
   overflow: visible;
-  filter: drop-shadow(0 0 8px rgba(107,227,164,0.10)) drop-shadow(0 0 18px rgba(107,227,164,0.05));
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--cat-color) 10%, transparent)) drop-shadow(0 0 18px color-mix(in srgb, var(--cat-color) 5%, transparent));
 }
 .ring-track { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 10; }
 .ring-progress {
-  fill: none; stroke: var(--accent); stroke-width: 10;
+  fill: none; stroke: var(--cat-color); stroke-width: 10;
   stroke-linecap: round;
   stroke-dasharray: 565.49;
   stroke-dashoffset: 0;
   transition: stroke-dashoffset 0.9s linear, stroke 0.4s;
 }
 @keyframes ringGlow {
-  0%, 100% { filter: drop-shadow(0 0 6px rgba(107,227,164,0.5)); }
-  50%       { filter: drop-shadow(0 0 18px rgba(107,227,164,0.9)); }
+  0%, 100% { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--cat-color) 50%, transparent)); }
+  50%       { filter: drop-shadow(0 0 18px color-mix(in srgb, var(--cat-color) 90%, transparent)); }
 }
 .ring-progress.glowing { animation: ringGlow 1s ease-in-out infinite; }
 
@@ -364,10 +365,10 @@ main {
   transition: all 0.15s var(--ease-spring);
 }
 .t-btn-start {
-  background: rgba(107,227,164,0.12);
-  border: 1px solid rgba(107,227,164,0.28);
-  color: #6BE3A4; flex: 1;
-  box-shadow: 0 0 20px rgba(107,227,164,0.08);
+  background: color-mix(in srgb, var(--cat-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cat-color) 28%, transparent);
+  color: var(--cat-color); flex: 1;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--cat-color) 8%, transparent);
 }
 .t-btn-start:active { transform: scale(0.97); opacity: 0.9; }
 .t-btn-start:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
@@ -378,13 +379,13 @@ main {
 .t-btn-reset:active { background: rgba(255,255,255,0.08); }
 .t-btn-complete {
   width: 100%; margin-top: 8px; padding: 11px;
-  background: rgba(107,227,164,0.08); border: 1px solid rgba(107,227,164,0.25);
-  border-radius: 12px; color: var(--accent);
+  background: color-mix(in srgb, var(--cat-color) 8%, transparent); border: 1px solid color-mix(in srgb, var(--cat-color) 25%, transparent);
+  border-radius: 12px; color: var(--cat-color);
   font-family: var(--font); font-size: 13px; font-weight: 700;
   cursor: pointer; -webkit-tap-highlight-color: transparent;
   transition: background 0.15s;
 }
-.t-btn-complete:active { background: rgba(107,227,164,0.14); }
+.t-btn-complete:active { background: color-mix(in srgb, var(--cat-color) 14%, transparent); }
 .start-hint {
   font-size: 12px; color: var(--text-tertiary); text-align: center;
   margin-top: 8px; display: none;
@@ -464,8 +465,8 @@ main {
 .cal-days { display:grid; grid-template-columns:repeat(7,1fr); grid-template-rows:repeat(6,auto); min-height:210px; align-content:start; }
 .cal-day { height:33px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:13px; font-weight:500; color:var(--text-primary); cursor:pointer; transition:background 0.12s; margin:1px 0; }
 .cal-day:hover:not(.cal-disabled):not(.cal-sel) { background:rgba(255,255,255,0.08); }
-.cal-day.cal-sel { background:#6BE3A4; color:#000; font-weight:700; }
-.cal-day.cal-today:not(.cal-sel) { color:#6BE3A4; font-weight:700; }
+.cal-day.cal-sel { background:var(--cat-color); color:#000; font-weight:700; }
+.cal-day.cal-today:not(.cal-sel) { color:var(--cat-color); font-weight:700; }
 .cal-day.cal-disabled { color:rgba(255,255,255,0.2); cursor:default; pointer-events:none; }
 /* ── Edit time pickers ── */
 .edit-time-wrap { display:flex; border:1px solid var(--border); border-radius:14px; overflow:hidden; margin:12px 0 6px; }
@@ -939,6 +940,7 @@ function renderCatBar() {
   add.className='cat-chip-add'; add.textContent='+ New';
   add.addEventListener('click',()=>{ editMode=false; openCatSheet(null); });
   bar.appendChild(add);
+  applyActiveCatColor();
 }
 
 function deleteCat(id) {
@@ -1013,6 +1015,8 @@ let swElapsed    = 0;  // stopwatch accumulated seconds
 let swStartTs    = 0;
 
 function hasCat() { return !!(activeCatId&&cats.find(c=>c.id===activeCatId&&!c.archived)); }
+function getActiveCatColor() { return cats.find(c=>c.id===activeCatId&&!c.archived)?.color||'#6BE3A4'; }
+function applyActiveCatColor() { document.documentElement.style.setProperty('--cat-color',getActiveCatColor()); }
 function getCatLabel() {
   if(timerPhase==='break') return 'Break';
   const cat=cats.find(c=>c.id===activeCatId&&!c.archived);
@@ -1051,7 +1055,7 @@ function tickStopwatch() {
 
 function doStart() {
   if(timerMode==='stopwatch') {
-    if(timerState==='idle'){ if(!hasCat()) return; sessionStart=new Date(); swElapsed=0; document.getElementById('ringProgress').style.stroke='#6BE3A4'; }
+    if(timerState==='idle'){ if(!hasCat()) return; sessionStart=new Date(); swElapsed=0; document.getElementById('ringProgress').style.stroke=getActiveCatColor(); }
     swStartTs=Date.now(); timerState='running';
     setPhaseLabel(getCatLabel(),true); renderTimerControls();
     rafId=requestAnimationFrame(tickStopwatch); return;
@@ -1060,7 +1064,7 @@ function doStart() {
     if(!hasCat()) return; sessionStart=new Date(); timerPhase='work';
     if(timerMode==='timer'){ workTotal=getTimerWorkTotal(); document.getElementById('timerDurRow').classList.add('picker-hidden'); }
     if(timerMode==='pomodoro') document.getElementById('pomodoroPresets').classList.add('picker-hidden');
-    remaining=workTotal; document.getElementById('ringProgress').style.stroke='#6BE3A4';
+    remaining=workTotal; document.getElementById('ringProgress').style.stroke=getActiveCatColor();
   }
   startTs=Date.now(); startRem=remaining; timerState='running';
   setPhaseLabel(getCatLabel(),true); renderTimerControls();
@@ -1099,7 +1103,7 @@ function onPhaseComplete() {
 function startBreak() {
   timerPhase='break'; timerState='running'; remaining=breakTotal;
   startTs=Date.now(); startRem=breakTotal;
-  document.getElementById('ringProgress').style.stroke='rgba(107,227,164,0.4)';
+  document.getElementById('ringProgress').style.stroke=hexToRgba(getActiveCatColor(),0.4);
   setPhaseLabel('Break',true); updateRing(breakTotal,breakTotal); renderTimerControls();
   rafId=requestAnimationFrame(tickCountdown);
 }
@@ -1107,7 +1111,7 @@ function startBreak() {
 function resetToIdle() {
   timerState='idle'; timerPhase='work'; cancelAnimationFrame(rafId);
   const rp=document.getElementById('ringProgress');
-  rp.style.stroke='#6BE3A4'; rp.classList.remove('glowing');
+  rp.style.stroke=getActiveCatColor(); rp.classList.remove('glowing');
   document.getElementById('ringTime').style.opacity='1';
   if(timerMode==='stopwatch'){
     swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
@@ -1159,7 +1163,7 @@ document.getElementById('modeSeg').addEventListener('click',e=>{
   document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('active',b===btn));
   document.getElementById('pomodoroPresets').style.display=timerMode==='pomodoro'?'':'none';
   document.getElementById('timerDurRow').style.display=timerMode==='timer'?'':'none';
-  const rp=document.getElementById('ringProgress'); rp.style.stroke='#6BE3A4';
+  const rp=document.getElementById('ringProgress'); rp.style.stroke=getActiveCatColor();
   if(timerMode==='stopwatch'){
     swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
   } else {
@@ -1380,8 +1384,9 @@ function drawLineGraph(labels,totals){
   const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
   const grad=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
   grad.setAttribute('id','lgGrad'); grad.setAttribute('x1','0'); grad.setAttribute('y1','0'); grad.setAttribute('x2','0'); grad.setAttribute('y2','1');
-  const s1=document.createElementNS('http://www.w3.org/2000/svg','stop'); s1.setAttribute('offset','0'); s1.setAttribute('stop-color','rgba(107,227,164,0.3)');
-  const s2=document.createElementNS('http://www.w3.org/2000/svg','stop'); s2.setAttribute('offset','1'); s2.setAttribute('stop-color','rgba(107,227,164,0)');
+  const lgc=getActiveCatColor();
+  const s1=document.createElementNS('http://www.w3.org/2000/svg','stop'); s1.setAttribute('offset','0'); s1.setAttribute('stop-color',hexToRgba(lgc,0.3));
+  const s2=document.createElementNS('http://www.w3.org/2000/svg','stop'); s2.setAttribute('offset','1'); s2.setAttribute('stop-color',hexToRgba(lgc,0));
   grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad); svg.appendChild(defs);
   function buildD(p){ if(p.length<2) return p.length?`M${p[0].x},${p[0].y}`:''; let d=`M${p[0].x},${p[0].y}`; for(let i=0;i<p.length-1;i++){ const cpx=(p[i].x+p[i+1].x)/2; d+=` C${cpx},${p[i].y},${cpx},${p[i+1].y},${p[i+1].x},${p[i+1].y}`; } return d; }
   const ld=buildD(pts);
@@ -1390,12 +1395,12 @@ function drawLineGraph(labels,totals){
   area.setAttribute('d',ld+` L${last.x},${H} L0,${H} Z`); area.setAttribute('fill','url(#lgGrad)'); area.setAttribute('stroke','none');
   svg.appendChild(area);
   const line=document.createElementNS('http://www.w3.org/2000/svg','path');
-  line.setAttribute('d',ld); line.setAttribute('fill','none'); line.setAttribute('stroke','#6BE3A4'); line.setAttribute('stroke-width','2'); line.setAttribute('stroke-linecap','round'); line.setAttribute('stroke-linejoin','round');
+  line.setAttribute('d',ld); line.setAttribute('fill','none'); line.setAttribute('stroke',lgc); line.setAttribute('stroke-width','2'); line.setAttribute('stroke-linecap','round'); line.setAttribute('stroke-linejoin','round');
   svg.appendChild(line);
   const len=line.getTotalLength();
   line.style.strokeDasharray=len; line.style.strokeDashoffset=len; line.style.transition='none';
   requestAnimationFrame(()=>requestAnimationFrame(()=>{ line.style.transition='stroke-dashoffset 0.8s cubic-bezier(0.22,1,0.36,1)'; line.style.strokeDashoffset='0'; }));
-  pts.forEach(p=>{ const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r','3'); c.setAttribute('fill','#6BE3A4'); svg.appendChild(c); });
+  pts.forEach(p=>{ const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r','3'); c.setAttribute('fill',lgc); svg.appendChild(c); });
   const lblEl=document.getElementById('lgLabels'); lblEl.innerHTML='';
   labels.forEach(l=>{ const s=document.createElement('span'); s.textContent=l; lblEl.appendChild(s); });
 }
