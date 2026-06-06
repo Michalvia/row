@@ -1177,7 +1177,14 @@ body::after {
     const hoursLbl = document.getElementById('dayRingHoursLabel');
     if (hoursLbl) hoursLbl.textContent = fmtHour(WAKE_HOUR) + ' – ' + fmtHour(SLEEP_HOUR);
 
-    if (hours < WAKE_HOUR) {
+    // When bedtime is after midnight (e.g. wake=8, sleep=1), SLEEP_HOUR < WAKE_HOUR.
+    // Sleeping window = [SLEEP_HOUR, WAKE_HOUR). Active window wraps around midnight.
+    const crossesMidnight = SLEEP_HOUR < WAKE_HOUR;
+    const isSleeping = crossesMidnight
+      ? (hours >= SLEEP_HOUR && hours < WAKE_HOUR)
+      : (hours < WAKE_HOUR);
+
+    if (isSleeping) {
       fillEl.setAttribute('stroke-dashoffset', C);
       fillEl.style.stroke = '#4D4B47';
       percentEl.textContent = '—';
@@ -1188,7 +1195,11 @@ body::after {
       return;
     }
 
-    if (hours >= SLEEP_HOUR) {
+    // Normalize to a continuous hours scale starting from WAKE_HOUR
+    const hoursNorm = (crossesMidnight && hours < WAKE_HOUR) ? hours + 24 : hours;
+    const sleepH    = crossesMidnight ? SLEEP_HOUR + 24 : SLEEP_HOUR;
+
+    if (hoursNorm >= sleepH) {
       fillEl.setAttribute('stroke-dashoffset', 0);
       fillEl.style.stroke = '#E25D7A';
       percentEl.textContent = '100%';
@@ -1198,8 +1209,8 @@ body::after {
       return;
     }
 
-    const span = SLEEP_HOUR - WAKE_HOUR;
-    const percent = (hours - WAKE_HOUR) / span * 100;
+    const span = sleepH - WAKE_HOUR;
+    const percent = (hoursNorm - WAKE_HOUR) / span * 100;
     fillEl.setAttribute('stroke-dashoffset', C * (1 - percent / 100));
     fillEl.style.stroke = rgb(paletteAt(percent));
     percentEl.textContent = Math.floor(percent) + '%';
@@ -1213,7 +1224,7 @@ body::after {
     phaseEl.textContent  = phase;
     statusEl.textContent = status;
 
-    const minsLeft = (SLEEP_HOUR - hours) * 60;
+    const minsLeft = (sleepH - hoursNorm) * 60;
     remainingEl.textContent = formatRemaining(minsLeft) + ' awake time left';
   }
 
@@ -1810,7 +1821,7 @@ body::after {
     let wH = _wakeDrum.getHour();
     let sH = _sleepDrum.getHour();
     if (sH === 0) sH = 24;
-    if (sH <= wH) sH = wH + 1;
+    // Allow sH < wH — it means bedtime is after midnight (e.g. wake=8, sleep=1)
     WAKE_HOUR = wH; SLEEP_HOUR = sH;
     try { localStorage.setItem('goals:schedule', JSON.stringify({ wakeHour: WAKE_HOUR, sleepHour: SLEEP_HOUR })); } catch(e) {}
     closeSchedModal();
@@ -1834,7 +1845,9 @@ body::after {
     const m = Math.floor((totalSecs % 3600) / 60);
     const timeStr = h > 0 ? `${h}h ${m}m` : (m > 0 ? `${m}m` : '0m');
     const now = new Date();
-    const awakeH = Math.max(0.1, now.getHours() + now.getMinutes() / 60 - WAKE_HOUR);
+    const nowH = now.getHours() + now.getMinutes() / 60;
+    const nowHNorm = (SLEEP_HOUR < WAKE_HOUR && nowH < WAKE_HOUR) ? nowH + 24 : nowH;
+    const awakeH = Math.max(0.1, nowHNorm - WAKE_HOUR);
     const pct = Math.min(100, Math.round((totalSecs / 3600 / awakeH) * 100));
     document.getElementById('workStripTime').textContent = timeStr;
     document.getElementById('workStripPct').textContent = pct + '% of time awake';
