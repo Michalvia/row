@@ -487,8 +487,10 @@ main {
 .hide-on-run { overflow:hidden; max-height:400px; opacity:1; transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease; }
 .hide-on-run.picker-hidden { max-height:0; opacity:0; pointer-events:none; }
 /* ── Time format toggle ── */
-.time-fmt-btn { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.10); border-radius:6px; color:var(--text-tertiary); font-size:10px; font-weight:700; font-family:var(--font-mono); padding:2px 7px; cursor:pointer; letter-spacing:0.05em; transition:background 0.15s; margin:3px 0 5px; }
-.time-fmt-btn:hover { background:rgba(255,255,255,0.14); }
+.fmt-toggle-row { display:flex; justify-content:center; margin:-4px 0 10px; }
+.fmt-seg { display:inline-flex; background:rgba(255,255,255,0.05); border-radius:8px; padding:2px; gap:2px; }
+.fmt-seg button { padding:4px 11px; border-radius:6px; border:none; background:transparent; color:var(--text-tertiary); font-size:11px; font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.15s; letter-spacing:0.02em; }
+.fmt-seg button.active { background:rgba(255,255,255,0.12); color:var(--text-primary); }
 /* ── Legend subtitle ── */
 .legend-name-col { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
 .legend-subtime { font-size:10px; color:var(--text-tertiary); font-weight:500; line-height:1.3; }
@@ -573,8 +575,8 @@ main {
     </div>
   </div>
 
-  <!-- Timer mode duration (hidden in other modes, animates out on start) -->
-  <div id="timerDurRow" class="timer-dur-picker" style="display:none">
+  <!-- Timer mode duration (CSS-hidden initially so drums init properly) -->
+  <div id="timerDurRow" class="timer-dur-picker picker-hidden">
     <div class="picker-row">
       <div class="drum-col">
         <div class="drum-wrap" id="timerHrPicker">
@@ -610,8 +612,13 @@ main {
     </div>
     <div class="ring-center">
       <div class="ring-time" id="ringTime">25:00</div>
-      <button class="time-fmt-btn" id="timeFmtBtn">hms</button>
       <div class="ring-phase" id="ringPhase">Focus</div>
+    </div>
+  </div>
+  <div class="fmt-toggle-row">
+    <div class="fmt-seg" id="fmtSeg">
+      <button class="active" data-fmt="ms">MM:SS</button>
+      <button data-fmt="hms">H:MM:SS</button>
     </div>
   </div>
 
@@ -663,6 +670,7 @@ main {
   <div class="sess-header">
     <div class="card-title" style="margin-bottom:0">Past Sessions</div>
     <div style="display:flex;gap:6px;align-items:center">
+      <button class="sess-icon-btn" id="sessAddBtn" title="Add session" style="font-size:18px;font-weight:300;line-height:1">+</button>
       <button class="sess-icon-btn" id="sessEditBtn" style="display:none" title="Delete sessions">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/><path d="M10 4l2 2"/></svg>
       </button>
@@ -1110,12 +1118,12 @@ document.getElementById('modeSeg').addEventListener('click',e=>{
   timerMode=btn.dataset.mode;
   document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('active',b===btn));
   document.getElementById('pomodoroPresets').style.display=timerMode==='pomodoro'?'':'none';
-  document.getElementById('timerDurRow').style.display=timerMode==='timer'?'':'none';
+  document.getElementById('timerDurRow').classList.toggle('picker-hidden', timerMode!=='timer');
   const rp=document.getElementById('ringProgress'); rp.style.stroke='#6BE3A4';
   if(timerMode==='stopwatch'){
     swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
   } else {
-    if(timerMode==='timer'){ ensureTimerDrums(); document.getElementById('timerDurRow').classList.remove('picker-hidden'); updateTimerFromHrMode(); }
+    if(timerMode==='timer'){ updateTimerFromHrMode(); }
     if(timerMode==='pomodoro') document.getElementById('pomodoroPresets').classList.remove('picker-hidden');
     remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=fmtDisplaySecs(workTotal);
   }
@@ -1149,9 +1157,9 @@ function updateTimerFromHrMode() {
   remaining = workTotal;
   if(timerMode==='timer'&&timerState==='idle') updateRing(workTotal,workTotal);
 }
-function getTimerWorkTotal() { ensureTimerDrums(); updateTimerFromHrMode(); return workTotal; }
+function getTimerWorkTotal() { updateTimerFromHrMode(); return workTotal; }
 
-let _cwReady=false, _timerDrumReady=false;
+let _cwReady=false;
 function ensureCustomDrums() {
   if(_cwReady) return; _cwReady=true;
   const wkItems=Array.from({length:120},(_,i)=>String(i+1).padStart(2,'0'));
@@ -1159,21 +1167,21 @@ function ensureCustomDrums() {
   const bkItems=Array.from({length:60},(_,i)=>String(i+1).padStart(2,'0'));
   cbDrum=makeDrum(document.getElementById('cbPicker'),bkItems,4,()=>{ breakTotal=(parseInt(cbDrum.getValue())||5)*60; updateCustomLabel(); });
 }
-function ensureTimerDrums() {
-  if(_timerDrumReady) return; _timerDrumReady=true;
+function initDrumPickers() {
+  // Timer drums init at page load — timerDurRow is CSS-hidden (not display:none), so layout exists
   const hrItems=Array.from({length:24},(_,i)=>String(i).padStart(2,'0'));
   timerHrDrum=makeDrum(document.getElementById('timerHrPicker'),hrItems,0,updateTimerFromHrMode);
   const hrMinItems=Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
-  timerHrMinDrum=makeDrum(document.getElementById('timerHrMinPicker'),hrMinItems,0,updateTimerFromHrMode);
-  updateTimerFromHrMode();
+  timerHrMinDrum=makeDrum(document.getElementById('timerHrMinPicker'),hrMinItems,25,updateTimerFromHrMode);
 }
-function initDrumPickers() { /* lazy — called on demand */ }
+initDrumPickers();
 
-document.getElementById('timeFmtBtn').addEventListener('click',()=>{
-  timerDisplayFmt = timerDisplayFmt==='ms' ? 'hms' : 'ms';
-  document.getElementById('timeFmtBtn').textContent = timerDisplayFmt==='ms' ? 'hms' : 'ms';
-  const secs = timerMode==='stopwatch' ? swGetElapsed() : getLiveRemaining();
-  document.getElementById('ringTime').textContent = fmtDisplaySecs(secs);
+document.getElementById('fmtSeg').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-fmt]'); if(!btn) return;
+  timerDisplayFmt=btn.dataset.fmt;
+  document.querySelectorAll('#fmtSeg button').forEach(b=>b.classList.toggle('active',b===btn));
+  const secs=timerMode==='stopwatch'?swGetElapsed():getLiveRemaining();
+  document.getElementById('ringTime').textContent=fmtDisplaySecs(secs);
 });
 
 // Pomodoro preset selection
@@ -1506,6 +1514,29 @@ function openEditSession(s){
   _endHrD.setIdx(eh-1); _endMinD.setIdx(em);
   _syncAmPm();
   _renderCal();
+  document.querySelector('.edit-title-row').textContent='Edit Session';
+  document.getElementById('editSaveBtn').textContent='Save';
+  document.getElementById('editOverlay').classList.add('open');
+}
+
+function openNewSession(){
+  _editSessId=null;
+  const now=new Date();
+  _calY=now.getFullYear(); _calM=now.getMonth(); _calD=now.getDate();
+  _initEditDrums();
+  // Default start = now
+  let sh=now.getHours(), sm=now.getMinutes();
+  _startAp=sh>=12?'PM':'AM'; sh=sh%12||12;
+  _startHrD.setIdx(sh-1); _startMinD.setIdx(sm);
+  // Default end = now + 1 hour
+  const endNow=new Date(now.getTime()+3600000);
+  let eh=endNow.getHours(), em=endNow.getMinutes();
+  _endAp=eh>=12?'PM':'AM'; eh=eh%12||12;
+  _endHrD.setIdx(eh-1); _endMinD.setIdx(em);
+  _syncAmPm();
+  _renderCal();
+  document.querySelector('.edit-title-row').textContent='Add Session';
+  document.getElementById('editSaveBtn').textContent='Add Session';
   document.getElementById('editOverlay').classList.add('open');
 }
 
@@ -1530,7 +1561,6 @@ document.getElementById('endAmBtn').addEventListener('click',()=>{_endAp='AM';_s
 document.getElementById('endPmBtn').addEventListener('click',()=>{_endAp='PM';_syncAmPm();});
 
 document.getElementById('editSaveBtn').addEventListener('click',()=>{
-  if(!_editSessId) return;
   const sh12=parseInt(_startHrD.getValue()), sm=parseInt(_startMinD.getValue());
   const sh24=_startAp==='AM'?(sh12===12?0:sh12):(sh12===12?12:sh12+12);
   const startDate=new Date(_calY,_calM,_calD,sh24,sm,0);
@@ -1539,11 +1569,17 @@ document.getElementById('editSaveBtn').addEventListener('click',()=>{
   let endDate=new Date(_calY,_calM,_calD,eh24,em,0);
   if(endDate<=startDate) endDate=new Date(endDate.getTime()+86400000);
   const dur=Math.max(60,Math.round((endDate-startDate)/1000));
-  saveSess(getSess().map(s=>s.id===_editSessId?{...s,at:startDate.toISOString(),durationSeconds:dur}:s));
+  if(_editSessId){
+    saveSess(getSess().map(s=>s.id===_editSessId?{...s,at:startDate.toISOString(),durationSeconds:dur}:s));
+  } else {
+    const catId=(cats.find(c=>c.id===activeCatId&&!c.archived)||cats.find(c=>!c.archived)||DEFAULT_CAT).id;
+    saveSess([...getSess(),{id:'sess_'+Date.now(),categoryId:catId,durationSeconds:dur,at:startDate.toISOString()}]);
+  }
   renderSessions(); drawCharts(); updateTodayCard();
   document.getElementById('editOverlay').classList.remove('open'); _editSessId=null;
 });
 document.getElementById('editOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('editOverlay')) document.getElementById('editOverlay').classList.remove('open'); });
+document.getElementById('sessAddBtn').addEventListener('click',openNewSession);
 
 // ─────────────────────────────────────────
 // Drum picker (kept for potential future use)
@@ -1573,7 +1609,6 @@ function makeDrum(wrapEl,items,initIdx,onChange){
 cats = ensureDefaults();
 renderCatBar();
 renderTimerControls();
-initDrumPickers();
 updateRing(workTotal, workTotal);
 drawCharts();
 renderSessions();
