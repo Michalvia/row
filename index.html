@@ -1292,19 +1292,19 @@ body::after {
     let expandBtn = null;
     let subExpanded = true;
 
-    if (!readOnly) {
-      const addSubBtn = document.createElement('button');
-      addSubBtn.type = 'button';
-      addSubBtn.className = 'gm-subgoal-btn';
-      addSubBtn.textContent = '+';
-      addSubBtn.title = 'Add subgoal';
-      body.appendChild(addSubBtn);
+    const addSubBtn = document.createElement('button');
+    addSubBtn.type = 'button';
+    addSubBtn.className = 'gm-subgoal-btn';
+    addSubBtn.textContent = '+';
+    addSubBtn.title = 'Add subgoal';
+    body.appendChild(addSubBtn);
 
-      const queueBtn = document.createElement('button');
-      queueBtn.type = 'button';
-      queueBtn.className = 'gm-queue-btn' + (goal.queued ? ' gm-queue-active' : '');
-      queueBtn.textContent = '⚡';
-      queueBtn.title = 'Queue for productivity window';
+    const queueBtn = document.createElement('button');
+    queueBtn.type = 'button';
+    queueBtn.className = 'gm-queue-btn' + (goal.queued ? ' gm-queue-active' : '');
+    queueBtn.textContent = '⚡';
+    queueBtn.title = 'Queue for productivity window';
+    if (!readOnly) {
       queueBtn.addEventListener('click', () => {
         const list = getGoals(key);
         if (!list[idx]) return;
@@ -1313,182 +1313,161 @@ body::after {
         li.classList.add('is-queue-flashing');
         setTimeout(reload, 480);
       });
-      body.appendChild(queueBtn);
-
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'goal-delete';
-      del.setAttribute('aria-label', 'Delete goal');
-      del.textContent = '×';
-      del.addEventListener('click', () => {
-        const list = getGoals(key);
-        list.splice(idx, 1);
-        setGoals(key, list);
-        reload();
-      });
-      body.appendChild(del);
-
-      // ---- subgoal section ----
-      const subList = document.createElement('ul');
-      subList.className = 'gm-subgoal-list';
-
-      function getSubgoals() { return ((getGoals(key)[idx] || {}).subgoals) || []; }
-      function saveSubgoals(subs) {
-        const list = getGoals(key);
-        if (!list[idx]) return;
-        list[idx].subgoals = subs;
-        setGoals(key, list);
-      }
-
-      function ensureExpandBtn() {
-        if (expandBtn) return;
-        expandBtn = document.createElement('button');
-        expandBtn.type = 'button';
-        expandBtn.className = 'gm-expand-btn';
-        expandBtn.textContent = '▾';
-        expandBtn.title = 'Show/hide subgoals';
-        expandBtn.addEventListener('click', () => {
-          subExpanded = !subExpanded;
-          expandBtn.textContent = subExpanded ? '▾' : '▸';
-          subList.classList.toggle('is-hidden', !subExpanded);
-        });
-        body.insertBefore(expandBtn, addSubBtn);
-      }
-
-      // Add input row (always last in subList)
-      const addRow = document.createElement('li');
-      addRow.className = 'gm-subgoal-add-row';
-      const inp = document.createElement('input');
-      inp.type = 'text';
-      inp.className = 'gm-subgoal-input';
-      inp.placeholder = 'Add subgoal…';
-      const confirmBtn = document.createElement('button');
-      confirmBtn.type = 'button';
-      confirmBtn.className = 'gm-subgoal-add-confirm';
-      confirmBtn.textContent = '↵';
-      addRow.appendChild(inp);
-      addRow.appendChild(confirmBtn);
-      subList.appendChild(addRow);
-
-      function renderSubrows() {
-        Array.from(subList.querySelectorAll('.gm-subrow')).forEach(r => r.remove());
-        const subs = getSubgoals();
-        text.classList.toggle('has-subgoals', subs.length > 0);
-        if (subs.length > 0) ensureExpandBtn();
-
-        subs.forEach((sub, si) => {
-          const subRow = document.createElement('li');
-          subRow.className = 'gm-subrow' + (sub.done ? ' gm-subrow-done' : '');
-
-          const subCb = document.createElement('input');
-          subCb.type = 'checkbox';
-          subCb.className = 'gm-sub-check';
-          subCb.checked = !!sub.done;
-          subCb.addEventListener('change', () => {
-            const cs = getSubgoals();
-            if (!cs[si]) return;
-            cs[si].done = subCb.checked;
-            saveSubgoals(cs);
-            subRow.classList.toggle('gm-subrow-done', subCb.checked);
-          });
-          subRow.appendChild(subCb);
-
-          const subText = document.createElement('span');
-          subText.className = 'gm-sub-text';
-          subText.textContent = sub.text;
-          subText.addEventListener('click', () => {
-            if (subText.getAttribute('contenteditable') === 'true') return;
-            const orig = subText.textContent;
-            subText.setAttribute('contenteditable', 'true');
-            subText.focus();
-            const r = document.createRange();
-            r.selectNodeContents(subText); r.collapse(false);
-            const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
-            subText.addEventListener('blur', () => {
-              const next = subText.textContent.trim();
-              subText.removeAttribute('contenteditable');
-              if (next && next !== orig) {
-                const cs = getSubgoals();
-                if (cs[si]) { cs[si].text = next; saveSubgoals(cs); }
-              } else { subText.textContent = orig; }
-            }, { once: true });
-            subText.addEventListener('keydown', function onKey(e) {
-              if (e.key === 'Enter') { e.preventDefault(); subText.removeEventListener('keydown', onKey); subText.blur(); }
-              if (e.key === 'Escape') { e.preventDefault(); subText.removeEventListener('keydown', onKey); subText.textContent = orig; subText.removeAttribute('contenteditable'); }
-            });
-          });
-          subRow.appendChild(subText);
-
-          const subDel = document.createElement('button');
-          subDel.type = 'button';
-          subDel.className = 'gm-sub-del';
-          subDel.textContent = '×';
-          subDel.setAttribute('aria-label', 'Delete subgoal');
-          subDel.addEventListener('click', () => {
-            const cs = getSubgoals();
-            cs.splice(si, 1);
-            saveSubgoals(cs);
-            if (cs.length === 0) { text.classList.remove('has-subgoals'); subList.classList.add('is-hidden'); }
-            renderSubrows();
-          });
-          subRow.appendChild(subDel);
-
-          subList.insertBefore(subRow, addRow);
-        });
-      }
-
-      function commitSubgoal() {
-        const val = inp.value.trim();
-        if (!val) return;
-        const cs = getSubgoals();
-        cs.push({ text: val, done: false });
-        saveSubgoals(cs);
-        inp.value = '';
-        if (!subExpanded) { subExpanded = true; if (expandBtn) { expandBtn.textContent = '▾'; subList.classList.remove('is-hidden'); } }
-        renderSubrows();
-        inp.focus();
-      }
-
-      inp.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); commitSubgoal(); }
-        if (e.key === 'Escape') { inp.value = ''; inp.blur(); if (!getSubgoals().length) subList.classList.add('is-hidden'); }
-      });
-      confirmBtn.addEventListener('click', commitSubgoal);
-
-      addSubBtn.addEventListener('click', () => {
-        subList.classList.remove('is-hidden');
-        subExpanded = true;
-        if (expandBtn) expandBtn.textContent = '▾';
-        inp.focus();
-      });
-
-      renderSubrows();
-      if ((goal.subgoals || []).length === 0) subList.classList.add('is-hidden');
-      li.appendChild(subList);
-
     } else {
-      // read-only (tomorrow list): queue + delete without subgoals
-      const queueBtn = document.createElement('button');
-      queueBtn.type = 'button';
-      queueBtn.className = 'gm-queue-btn' + (goal.queued ? ' gm-queue-active' : '');
-      queueBtn.textContent = '⚡';
-      queueBtn.title = 'Queue for productivity window';
       queueBtn.disabled = true;
-      body.appendChild(queueBtn);
-
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'goal-delete';
-      del.setAttribute('aria-label', 'Delete goal');
-      del.textContent = '×';
-      del.addEventListener('click', () => {
-        const list = getGoals(key);
-        list.splice(idx, 1);
-        setGoals(key, list);
-        reload();
-      });
-      body.appendChild(del);
     }
+    body.appendChild(queueBtn);
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'goal-delete';
+    del.setAttribute('aria-label', 'Delete goal');
+    del.textContent = '×';
+    del.addEventListener('click', () => {
+      const list = getGoals(key);
+      list.splice(idx, 1);
+      setGoals(key, list);
+      reload();
+    });
+    body.appendChild(del);
+
+    // ---- subgoal section ----
+    const subList = document.createElement('ul');
+    subList.className = 'gm-subgoal-list';
+
+    function getSubgoals() { return ((getGoals(key)[idx] || {}).subgoals) || []; }
+    function saveSubgoals(subs) {
+      const list = getGoals(key);
+      if (!list[idx]) return;
+      list[idx].subgoals = subs;
+      setGoals(key, list);
+    }
+
+    function ensureExpandBtn() {
+      if (expandBtn) return;
+      expandBtn = document.createElement('button');
+      expandBtn.type = 'button';
+      expandBtn.className = 'gm-expand-btn';
+      expandBtn.textContent = '▾';
+      expandBtn.title = 'Show/hide subgoals';
+      expandBtn.addEventListener('click', () => {
+        subExpanded = !subExpanded;
+        expandBtn.textContent = subExpanded ? '▾' : '▸';
+        subList.classList.toggle('is-hidden', !subExpanded);
+      });
+      body.insertBefore(expandBtn, addSubBtn);
+    }
+
+    // Add input row (always last in subList)
+    const addRow = document.createElement('li');
+    addRow.className = 'gm-subgoal-add-row';
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'gm-subgoal-input';
+    inp.placeholder = 'Add subgoal…';
+    const confirmBtn = document.createElement('button');
+    confirmBtn.type = 'button';
+    confirmBtn.className = 'gm-subgoal-add-confirm';
+    confirmBtn.textContent = '↵';
+    addRow.appendChild(inp);
+    addRow.appendChild(confirmBtn);
+    subList.appendChild(addRow);
+
+    function renderSubrows() {
+      Array.from(subList.querySelectorAll('.gm-subrow')).forEach(r => r.remove());
+      const subs = getSubgoals();
+      text.classList.toggle('has-subgoals', subs.length > 0);
+      if (subs.length > 0) ensureExpandBtn();
+
+      subs.forEach((sub, si) => {
+        const subRow = document.createElement('li');
+        subRow.className = 'gm-subrow' + (sub.done ? ' gm-subrow-done' : '');
+
+        const subCb = document.createElement('input');
+        subCb.type = 'checkbox';
+        subCb.className = 'gm-sub-check';
+        subCb.checked = !!sub.done;
+        subCb.addEventListener('change', () => {
+          const cs = getSubgoals();
+          if (!cs[si]) return;
+          cs[si].done = subCb.checked;
+          saveSubgoals(cs);
+          subRow.classList.toggle('gm-subrow-done', subCb.checked);
+        });
+        subRow.appendChild(subCb);
+
+        const subText = document.createElement('span');
+        subText.className = 'gm-sub-text';
+        subText.textContent = sub.text;
+        subText.addEventListener('click', () => {
+          if (subText.getAttribute('contenteditable') === 'true') return;
+          const orig = subText.textContent;
+          subText.setAttribute('contenteditable', 'true');
+          subText.focus();
+          const r = document.createRange();
+          r.selectNodeContents(subText); r.collapse(false);
+          const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+          subText.addEventListener('blur', () => {
+            const next = subText.textContent.trim();
+            subText.removeAttribute('contenteditable');
+            if (next && next !== orig) {
+              const cs = getSubgoals();
+              if (cs[si]) { cs[si].text = next; saveSubgoals(cs); }
+            } else { subText.textContent = orig; }
+          }, { once: true });
+          subText.addEventListener('keydown', function onKey(e) {
+            if (e.key === 'Enter') { e.preventDefault(); subText.removeEventListener('keydown', onKey); subText.blur(); }
+            if (e.key === 'Escape') { e.preventDefault(); subText.removeEventListener('keydown', onKey); subText.textContent = orig; subText.removeAttribute('contenteditable'); }
+          });
+        });
+        subRow.appendChild(subText);
+
+        const subDel = document.createElement('button');
+        subDel.type = 'button';
+        subDel.className = 'gm-sub-del';
+        subDel.textContent = '×';
+        subDel.setAttribute('aria-label', 'Delete subgoal');
+        subDel.addEventListener('click', () => {
+          const cs = getSubgoals();
+          cs.splice(si, 1);
+          saveSubgoals(cs);
+          if (cs.length === 0) { text.classList.remove('has-subgoals'); subList.classList.add('is-hidden'); }
+          renderSubrows();
+        });
+        subRow.appendChild(subDel);
+
+        subList.insertBefore(subRow, addRow);
+      });
+    }
+
+    function commitSubgoal() {
+      const val = inp.value.trim();
+      if (!val) return;
+      const cs = getSubgoals();
+      cs.push({ text: val, done: false });
+      saveSubgoals(cs);
+      inp.value = '';
+      if (!subExpanded) { subExpanded = true; if (expandBtn) { expandBtn.textContent = '▾'; subList.classList.remove('is-hidden'); } }
+      renderSubrows();
+      inp.focus();
+    }
+
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commitSubgoal(); }
+      if (e.key === 'Escape') { inp.value = ''; inp.blur(); if (!getSubgoals().length) subList.classList.add('is-hidden'); }
+    });
+    confirmBtn.addEventListener('click', commitSubgoal);
+
+    addSubBtn.addEventListener('click', () => {
+      subList.classList.remove('is-hidden');
+      subExpanded = true;
+      if (expandBtn) expandBtn.textContent = '▾';
+      inp.focus();
+    });
+
+    renderSubrows();
+    if ((goal.subgoals || []).length === 0) subList.classList.add('is-hidden');
+    li.appendChild(subList);
 
     wireDragReorder(li, null, key, reload);
     return li;
