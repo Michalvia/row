@@ -1570,7 +1570,13 @@ body::after {
     const tomorrow = getGoals(tomorrowKey());
     const seen = new Set(tomorrow.map(g => g.text));
     remaining.forEach(g => {
-      if (!seen.has(g.text)) { tomorrow.push({ text: g.text, done: false }); seen.add(g.text); }
+      if (!seen.has(g.text)) {
+        const newGoal = { text: g.text, done: false };
+        const incompleteSubs = (g.subgoals || []).filter(s => !s.done);
+        if (incompleteSubs.length > 0) newGoal.subgoals = incompleteSubs;
+        tomorrow.push(newGoal);
+        seen.add(g.text);
+      }
     });
     setGoals(tomorrowKey(), tomorrow);
     setGoals(todayKey(), today.filter(g => g.done));
