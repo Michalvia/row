@@ -467,33 +467,45 @@ main {
   </div>
 </div>
 
-<!-- ── 2. Pomodoro Timer ── -->
+<!-- ── 2. Timer ── -->
 <div class="card" style="text-align:center">
-  <!-- Preset grid -->
-  <div class="preset-grid" id="presetGrid">
-    <button class="preset-card active" data-preset="pomodoro">
-      <span class="preset-name">Pomodoro</span>
-      <span class="preset-dur">25 / 5 min</span>
-    </button>
-    <button class="preset-card" data-preset="long">
-      <span class="preset-name">Long Focus</span>
-      <span class="preset-dur">50 / 10 min</span>
-    </button>
-    <button class="preset-card" data-preset="deep">
-      <span class="preset-name">Deep Work</span>
-      <span class="preset-dur">90 / 20 min</span>
-    </button>
-    <button class="preset-card" data-preset="custom">
-      <span class="preset-name">Custom</span>
-      <span class="preset-dur" id="customDurLabel">25 / 5 min</span>
-    </button>
+  <!-- Mode switcher -->
+  <div class="seg" id="modeSeg" style="margin-bottom:16px">
+    <button class="active" data-mode="pomodoro">Pomodoro</button>
+    <button data-mode="stopwatch">Stopwatch</button>
+    <button data-mode="timer">Timer</button>
   </div>
 
-  <!-- Custom duration inputs -->
-  <div class="custom-dur-row" id="customDurRow" style="display:none">
-    <label>Work <input class="dur-input" id="cwMin" type="number" min="1" max="180" value="25"> min</label>
-    <span class="dur-sep">/</span>
-    <label>Break <input class="dur-input" id="cbMin" type="number" min="1" max="60" value="5"> min</label>
+  <!-- Pomodoro presets (hidden in other modes) -->
+  <div id="pomodoroPresets">
+    <div class="preset-grid" id="presetGrid">
+      <button class="preset-card active" data-preset="pomodoro">
+        <span class="preset-name">Pomodoro</span>
+        <span class="preset-dur">25 / 5 min</span>
+      </button>
+      <button class="preset-card" data-preset="long">
+        <span class="preset-name">Long Focus</span>
+        <span class="preset-dur">50 / 10 min</span>
+      </button>
+      <button class="preset-card" data-preset="deep">
+        <span class="preset-name">Deep Work</span>
+        <span class="preset-dur">90 / 20 min</span>
+      </button>
+      <button class="preset-card" data-preset="custom">
+        <span class="preset-name">Custom</span>
+        <span class="preset-dur" id="customDurLabel">25 / 5 min</span>
+      </button>
+    </div>
+    <div class="custom-dur-row" id="customDurRow" style="display:none">
+      <label>Work <input class="dur-input" id="cwMin" type="number" min="1" max="180" value="25"> min</label>
+      <span class="dur-sep">/</span>
+      <label>Break <input class="dur-input" id="cbMin" type="number" min="1" max="60" value="5"> min</label>
+    </div>
+  </div>
+
+  <!-- Timer mode duration input (hidden in other modes) -->
+  <div class="custom-dur-row" id="timerDurRow" style="display:none;margin-bottom:18px">
+    <label>Duration <input class="dur-input" id="timerMins" type="number" min="1" max="180" value="25"> min</label>
   </div>
 
   <!-- SVG Ring -->
@@ -502,20 +514,17 @@ main {
       <circle class="ring-track" cx="110" cy="110" r="90"/>
       <circle class="ring-progress" id="ringProgress" cx="110" cy="110" r="90"/>
     </svg>
-    <!-- Ripples (behind center content) -->
     <div class="ripple-ring" id="rp1"></div>
     <div class="ripple-ring" id="rp2"></div>
     <div class="ripple-ring" id="rp3"></div>
-    <!-- Checkmark overlay -->
     <div class="check-overlay" id="checkOverlay">
       <svg viewBox="0 0 220 220" width="220" height="220">
         <path class="check-path" id="checkPath" d="M 75,112 L 100,137 L 148,86"/>
       </svg>
     </div>
-    <!-- Time + phase label -->
     <div class="ring-center">
       <div class="ring-time" id="ringTime">25:00</div>
-      <div class="ring-phase" id="ringPhase">Work</div>
+      <div class="ring-phase" id="ringPhase">Focus</div>
     </div>
   </div>
 
@@ -530,7 +539,15 @@ main {
 
 <!-- ── 3. Today So Far (shown once time is logged) ── -->
 <div class="card" id="todayCard" style="display:none">
-  <div class="card-title">Today So Far</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div class="card-title" style="margin-bottom:0">Today So Far</div>
+    <div class="seg" id="rangeSeg" style="padding:2px;border-radius:8px">
+      <button class="active" data-r="day" style="padding:4px 10px;font-size:11px;border-radius:6px">Day</button>
+      <button data-r="week" style="padding:4px 10px;font-size:11px;border-radius:6px">Week</button>
+      <button data-r="month" style="padding:4px 10px;font-size:11px;border-radius:6px">Month</button>
+      <button data-r="year" style="padding:4px 10px;font-size:11px;border-radius:6px">Year</button>
+    </div>
+  </div>
   <div class="today-total" id="todayTotal">0m</div>
   <div id="todayCatsList"></div>
 </div>
@@ -717,7 +734,7 @@ function renderCatBar() {
         chip.appendChild(x);
       }
     } else {
-      chip.addEventListener('click',()=>{ activeCatId=cat.id; renderCatBar(); renderTimerControls(); });
+      chip.addEventListener('click',()=>{ activeCatId=cat.id; renderCatBar(); renderTimerControls(); if(timerState==='idle'||timerState==='paused') setPhaseLabel(getCatLabel(), timerState==='running'); });
     }
     bar.appendChild(chip);
   });
@@ -784,7 +801,7 @@ document.getElementById('catSheetSave').addEventListener('click',()=>{
 });
 
 // ─────────────────────────────────────────
-// Pomodoro Timer
+// Timer — Pomodoro | Stopwatch | Timer
 // ─────────────────────────────────────────
 const PRESETS = {
   pomodoro: { work:1500, brk:300 },
@@ -792,244 +809,197 @@ const PRESETS = {
   deep:     { work:5400, brk:1200 },
   custom:   { work:1500, brk:300 }
 };
-const CIRC = 2 * Math.PI * 90; // 565.49
+const CIRC   = 2 * Math.PI * 90; // 565.49
+const SW_REF = 1500;              // stopwatch fills ring over 25 min
 
+let timerMode    = 'pomodoro';
 let activePreset = 'pomodoro';
-let timerPhase   = 'work';   // 'work' | 'break'
-let timerState   = 'idle';   // 'idle' | 'running' | 'paused' | 'complete'
+let timerPhase   = 'work';
+let timerState   = 'idle';
 let workTotal    = 1500;
 let breakTotal   = 300;
-let remaining    = 1500;     // seconds, saved on pause
-let startTs      = 0;        // Date.now() when current interval started
-let startRem     = 1500;     // remaining when interval started
+let remaining    = 1500;
+let startTs      = 0;
+let startRem     = 1500;
 let rafId        = null;
 let sessionStart = null;
 let transTimeout = null;
+let swElapsed    = 0;  // stopwatch accumulated seconds
+let swStartTs    = 0;
 
-function hasCat() {
-  return !!(activeCatId && cats.find(c=>c.id===activeCatId&&!c.archived));
-}
-
-function fmtSecs(s) {
-  s = Math.max(0, Math.ceil(s));
-  const m=Math.floor(s/60), sec=s%60;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-function fmtHm(s) {
-  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60);
-  if(h>0) return `${h}h ${m}m`;
-  return `${m}m`;
-}
-function fmtDuration(s) {
-  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
-  if(h>0) return `${h}h ${m}m`;
-  if(m>0) return `${m}m ${sec}s`;
-  return `${sec}s`;
+function hasCat() { return !!(activeCatId&&cats.find(c=>c.id===activeCatId&&!c.archived)); }
+function getCatLabel() {
+  if(timerPhase==='break') return 'Break';
+  const cat=cats.find(c=>c.id===activeCatId&&!c.archived);
+  return cat?cat.name:'Focus';
 }
 
-function getLiveRemaining() {
-  if(timerState==='running') return Math.max(0, startRem-(Date.now()-startTs)/1000);
-  return remaining;
-}
+function fmtSecs(s) { s=Math.max(0,Math.ceil(s)); const m=Math.floor(s/60),sec=s%60; return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
+function fmtElapsed(s) { s=Math.floor(Math.max(0,s)); const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60; return h>0?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
+function fmtHm(s) { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?`${h}h ${m}m`:`${m}m`; }
+function fmtDuration(s) { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60; if(h>0)return`${h}h ${m}m`; if(m>0)return`${m}m ${sec}s`; return`${sec}s`; }
 
-function updateRing(rem, total) {
-  const progress = total>0 ? rem/total : 1;
-  const offset = CIRC*(1-progress);
-  document.getElementById('ringProgress').style.strokeDashoffset = offset;
+function getLiveRemaining() { return timerState==='running'?Math.max(0,startRem-(Date.now()-startTs)/1000):remaining; }
+function swGetElapsed() { return swElapsed+(timerState==='running'?(Date.now()-swStartTs)/1000:0); }
+
+function updateRing(rem,total) {
+  document.getElementById('ringProgress').style.strokeDashoffset = CIRC*(1-(total>0?rem/total:1));
   document.getElementById('ringTime').textContent = fmtSecs(rem);
 }
+function updateRingSw(elapsed) {
+  document.getElementById('ringProgress').style.strokeDashoffset = Math.max(0, CIRC*(1-Math.min(elapsed/SW_REF,1)));
+  document.getElementById('ringTime').textContent = fmtElapsed(elapsed);
+}
 
-function tick() {
+function tickCountdown() {
   if(timerState!=='running') return;
-  const rem = getLiveRemaining();
-  const total = timerPhase==='work' ? workTotal : breakTotal;
-  updateRing(rem, total);
+  const rem=getLiveRemaining(), total=timerPhase==='work'?workTotal:breakTotal;
+  updateRing(rem,total);
   if(rem<=0){ onPhaseComplete(); return; }
-  rafId = requestAnimationFrame(tick);
+  rafId=requestAnimationFrame(tickCountdown);
+}
+function tickStopwatch() {
+  if(timerState!=='running') return;
+  updateRingSw(swGetElapsed());
+  rafId=requestAnimationFrame(tickStopwatch);
 }
 
 function doStart() {
-  if(timerState==='idle'){
-    if(!hasCat()) return;
-    sessionStart = new Date();
-    timerPhase = 'work';
-    remaining = workTotal;
-    document.getElementById('ringProgress').style.stroke = '#6BE3A4';
-    setPhaseLabel('Work', true);
+  if(timerMode==='stopwatch') {
+    if(timerState==='idle'){ if(!hasCat()) return; sessionStart=new Date(); swElapsed=0; document.getElementById('ringProgress').style.stroke='#6BE3A4'; }
+    swStartTs=Date.now(); timerState='running';
+    setPhaseLabel(getCatLabel(),true); renderTimerControls();
+    rafId=requestAnimationFrame(tickStopwatch); return;
   }
-  startTs = Date.now();
-  startRem = remaining;
-  timerState = 'running';
-  renderTimerControls();
-  rafId = requestAnimationFrame(tick);
+  if(timerState==='idle'){
+    if(!hasCat()) return; sessionStart=new Date(); timerPhase='work';
+    if(timerMode==='timer') workTotal=(parseInt(document.getElementById('timerMins').value)||25)*60;
+    remaining=workTotal; document.getElementById('ringProgress').style.stroke='#6BE3A4';
+  }
+  startTs=Date.now(); startRem=remaining; timerState='running';
+  setPhaseLabel(getCatLabel(),true); renderTimerControls();
+  rafId=requestAnimationFrame(tickCountdown);
 }
 
 function doPause() {
-  remaining = getLiveRemaining();
-  timerState = 'paused';
-  cancelAnimationFrame(rafId);
-  renderTimerControls();
+  if(timerMode==='stopwatch') swElapsed=swGetElapsed(); else remaining=getLiveRemaining();
+  timerState='paused'; cancelAnimationFrame(rafId);
+  setPhaseLabel(getCatLabel(),false); renderTimerControls();
 }
 
 function doReset() {
-  cancelAnimationFrame(rafId);
-  clearTimeout(transTimeout);
-  if(timerPhase==='work'&&timerState!=='idle'){
-    const worked = Math.round(workTotal - getLiveRemaining());
-    if(worked>=5) autoLog(worked);
-  }
+  cancelAnimationFrame(rafId); clearTimeout(transTimeout);
+  if(timerMode==='stopwatch'){ const e=swGetElapsed(); if(e>=5) autoLog(Math.round(e)); swElapsed=0; swStartTs=0; }
+  else if(timerPhase==='work'&&timerState!=='idle'){ const w=Math.round(workTotal-getLiveRemaining()); if(w>=5) autoLog(w); }
   resetToIdle();
 }
 
 function doCompleteEarly() {
-  cancelAnimationFrame(rafId);
-  clearTimeout(transTimeout);
-  const worked = Math.round(workTotal - remaining);
-  if(worked>=5) autoLog(worked);
+  cancelAnimationFrame(rafId); clearTimeout(transTimeout);
+  if(timerMode==='stopwatch'){ const e=swGetElapsed(); if(e>=5) autoLog(Math.round(e)); swElapsed=0; }
+  else { const w=Math.round(workTotal-remaining); if(w>=5) autoLog(w); }
   resetToIdle();
 }
 
 function onPhaseComplete() {
-  cancelAnimationFrame(rafId);
-  timerState='complete';
+  cancelAnimationFrame(rafId); timerState='complete';
   if(timerPhase==='work'){
-    autoLog(workTotal);
-    playChime();
-    showCompletion();
-    transTimeout=setTimeout(()=>{ hideCompletion(); startBreak(); }, 3000);
-  } else {
-    playChime();
-    showCompletion();
-    transTimeout=setTimeout(()=>{ hideCompletion(); resetToIdle(); }, 2200);
-  }
+    autoLog(workTotal); playChime(); showCompletion();
+    transTimeout=setTimeout(()=>{ hideCompletion(); timerMode==='pomodoro'?startBreak():resetToIdle(); }, timerMode==='pomodoro'?3000:2500);
+  } else { playChime(); showCompletion(); transTimeout=setTimeout(()=>{ hideCompletion(); resetToIdle(); },2200); }
   renderTimerControls();
 }
 
 function startBreak() {
-  timerPhase='break';
-  timerState='running';
-  remaining=breakTotal;
+  timerPhase='break'; timerState='running'; remaining=breakTotal;
   startTs=Date.now(); startRem=breakTotal;
   document.getElementById('ringProgress').style.stroke='rgba(107,227,164,0.4)';
-  setPhaseLabel('Break', true);
-  updateRing(breakTotal, breakTotal);
-  renderTimerControls();
-  rafId=requestAnimationFrame(tick);
+  setPhaseLabel('Break',true); updateRing(breakTotal,breakTotal); renderTimerControls();
+  rafId=requestAnimationFrame(tickCountdown);
 }
 
 function resetToIdle() {
-  timerState='idle'; timerPhase='work'; remaining=workTotal;
-  cancelAnimationFrame(rafId);
-  document.getElementById('ringProgress').style.stroke='#6BE3A4';
-  document.getElementById('ringProgress').style.strokeDashoffset='0';
-  document.getElementById('ringProgress').classList.remove('glowing');
-  document.getElementById('ringTime').textContent=fmtSecs(workTotal);
-  document.getElementById('ringTime').style.opacity='1';
-  setPhaseLabel('Work', false);
-  hideCompletion();
-  renderTimerControls();
-  updateTodayCard();
-}
-
-function setPhaseLabel(text, running) {
-  const el=document.getElementById('ringPhase');
-  if(running){ el.innerHTML=`<span class="pulse-dot"></span> ${text}`; }
-  else { el.textContent=text; }
-  el.style.opacity='1';
-}
-
-// Completion animation
-function showCompletion() {
+  timerState='idle'; timerPhase='work'; cancelAnimationFrame(rafId);
   const rp=document.getElementById('ringProgress');
-  rp.style.strokeDashoffset='0';
-  rp.classList.add('glowing');
+  rp.style.stroke='#6BE3A4'; rp.classList.remove('glowing');
+  document.getElementById('ringTime').style.opacity='1';
+  if(timerMode==='stopwatch'){
+    swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
+  } else {
+    if(timerMode==='timer') workTotal=(parseInt(document.getElementById('timerMins').value)||25)*60;
+    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=fmtSecs(workTotal);
+  }
+  setPhaseLabel(getCatLabel(),false); hideCompletion(); renderTimerControls(); updateTodayCard();
+}
+
+function setPhaseLabel(text,running) {
+  const el=document.getElementById('ringPhase'); el.style.opacity='1';
+  if(running) el.innerHTML=`<span class="pulse-dot"></span> ${text}`; else el.textContent=text;
+}
+
+function showCompletion() {
+  const rp=document.getElementById('ringProgress'); rp.style.strokeDashoffset='0'; rp.classList.add('glowing');
   ['rp1','rp2','rp3'].forEach(id=>document.getElementById(id).classList.add('active'));
-  const ov=document.getElementById('checkOverlay');
-  ov.classList.add('show');
-  const path=document.getElementById('checkPath');
-  const len=path.getTotalLength();
-  path.style.transition='none';
-  path.style.strokeDasharray=len;
-  path.style.strokeDashoffset=len;
-  document.getElementById('ringTime').style.opacity='0';
-  document.getElementById('ringPhase').style.opacity='0';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    path.style.transition='stroke-dashoffset 0.65s cubic-bezier(0.22,1,0.36,1)';
-    path.style.strokeDashoffset='0';
-  }));
+  document.getElementById('checkOverlay').classList.add('show');
+  const path=document.getElementById('checkPath'), len=path.getTotalLength();
+  path.style.transition='none'; path.style.strokeDasharray=len; path.style.strokeDashoffset=len;
+  document.getElementById('ringTime').style.opacity='0'; document.getElementById('ringPhase').style.opacity='0';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ path.style.transition='stroke-dashoffset 0.65s cubic-bezier(0.22,1,0.36,1)'; path.style.strokeDashoffset='0'; }));
 }
 function hideCompletion() {
   document.getElementById('ringProgress').classList.remove('glowing');
   ['rp1','rp2','rp3'].forEach(id=>document.getElementById(id).classList.remove('active'));
-  const ov=document.getElementById('checkOverlay');
-  ov.classList.remove('show');
-  const path=document.getElementById('checkPath');
-  path.style.transition='none';
+  document.getElementById('checkOverlay').classList.remove('show');
+  document.getElementById('checkPath').style.transition='none';
 }
 
 function renderTimerControls() {
-  const startBtn=document.getElementById('startBtn');
-  const resetBtn=document.getElementById('resetBtn');
-  const completeBtn=document.getElementById('completeBtn');
-  const hint=document.getElementById('startHint');
+  const startBtn=document.getElementById('startBtn'), resetBtn=document.getElementById('resetBtn');
+  const completeBtn=document.getElementById('completeBtn'), hint=document.getElementById('startHint');
   const controls=document.getElementById('timerControls');
-
-  controls.style.display='';
-  completeBtn.style.display='none';
-  hint.style.display='none';
-
-  if(timerState==='complete'){
-    controls.style.display='none'; return;
-  }
-  if(timerState==='idle'){
-    startBtn.textContent='Start';
-    startBtn.disabled=!hasCat();
-    resetBtn.style.display='none';
-    hint.style.display=hasCat()?'none':'block';
-    return;
-  }
-  startBtn.disabled=false;
-  resetBtn.style.display='';
-  if(timerState==='running'){
-    startBtn.textContent='Pause';
-    resetBtn.textContent=timerPhase==='break'?'Skip Break':'Reset';
-  } else {
-    startBtn.textContent='Resume';
-    resetBtn.textContent='Reset';
-    if(timerPhase==='work') completeBtn.style.display='';
-  }
+  controls.style.display=''; completeBtn.style.display='none'; hint.style.display='none';
+  if(timerState==='complete'){ controls.style.display='none'; return; }
+  if(timerState==='idle'){ startBtn.textContent='Start'; startBtn.disabled=!hasCat(); resetBtn.style.display='none'; hint.style.display=hasCat()?'none':'block'; return; }
+  startBtn.disabled=false; resetBtn.style.display='';
+  if(timerState==='running'){ startBtn.textContent='Pause'; resetBtn.textContent=timerPhase==='break'?'Skip Break':'Reset'; }
+  else { startBtn.textContent='Resume'; resetBtn.textContent='Reset'; if(timerPhase==='work'||timerMode==='stopwatch') completeBtn.style.display=''; }
 }
 
-document.getElementById('startBtn').addEventListener('click',()=>{
-  if(timerState==='running') doPause(); else doStart();
+// Mode switcher
+document.getElementById('modeSeg').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-mode]'); if(!btn||timerState!=='idle') return;
+  timerMode=btn.dataset.mode;
+  document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('active',b===btn));
+  document.getElementById('pomodoroPresets').style.display=timerMode==='pomodoro'?'':'none';
+  document.getElementById('timerDurRow').style.display=timerMode==='timer'?'':'none';
+  const rp=document.getElementById('ringProgress'); rp.style.stroke='#6BE3A4';
+  if(timerMode==='stopwatch'){
+    swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
+  } else {
+    if(timerMode==='timer') workTotal=(parseInt(document.getElementById('timerMins').value)||25)*60;
+    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=fmtSecs(workTotal);
+  }
+  setPhaseLabel(getCatLabel(),false); renderTimerControls();
 });
+
+document.getElementById('startBtn').addEventListener('click',()=>{ if(timerState==='running') doPause(); else doStart(); });
 document.getElementById('resetBtn').addEventListener('click',doReset);
 document.getElementById('completeBtn').addEventListener('click',doCompleteEarly);
+document.getElementById('timerMins').addEventListener('input',()=>{ if(timerMode==='timer'&&timerState==='idle'){ workTotal=(parseInt(document.getElementById('timerMins').value)||25)*60; remaining=workTotal; updateRing(workTotal,workTotal); }});
 
-// Preset selection
+// Pomodoro preset selection
 document.getElementById('presetGrid').addEventListener('click',e=>{
-  const btn=e.target.closest('[data-preset]');
-  if(!btn||timerState!=='idle') return;
+  const btn=e.target.closest('[data-preset]'); if(!btn||timerState!=='idle') return;
   activePreset=btn.dataset.preset;
   document.querySelectorAll('.preset-card').forEach(b=>b.classList.toggle('active',b===btn));
-  if(activePreset==='custom'){
-    document.getElementById('customDurRow').style.display='';
-    readCustomDurations();
-  } else {
-    document.getElementById('customDurRow').style.display='none';
-    workTotal=PRESETS[activePreset].work;
-    breakTotal=PRESETS[activePreset].brk;
-  }
-  remaining=workTotal;
-  updateRing(workTotal, workTotal);
+  if(activePreset==='custom'){ document.getElementById('customDurRow').style.display=''; readCustomDurations(); }
+  else { document.getElementById('customDurRow').style.display='none'; workTotal=PRESETS[activePreset].work; breakTotal=PRESETS[activePreset].brk; }
+  remaining=workTotal; updateRing(workTotal,workTotal);
 });
-
 function readCustomDurations(){
   workTotal=(parseInt(document.getElementById('cwMin').value)||25)*60;
   breakTotal=(parseInt(document.getElementById('cbMin').value)||5)*60;
-  const wl=parseInt(document.getElementById('cwMin').value)||25;
-  const bl=parseInt(document.getElementById('cbMin').value)||5;
-  document.getElementById('customDurLabel').textContent=`${wl} / ${bl} min`;
+  document.getElementById('customDurLabel').textContent=`${parseInt(document.getElementById('cwMin').value)||25} / ${parseInt(document.getElementById('cbMin').value)||5} min`;
 }
 document.getElementById('cwMin').addEventListener('input',()=>{ if(activePreset==='custom'&&timerState==='idle'){ readCustomDurations(); remaining=workTotal; updateRing(workTotal,workTotal); }});
 document.getElementById('cbMin').addEventListener('input',()=>{ if(activePreset==='custom'&&timerState==='idle') readCustomDurations(); });
@@ -1049,17 +1019,28 @@ function autoLog(durationSeconds) {
 // ─────────────────────────────────────────
 // Today So Far
 // ─────────────────────────────────────────
+let todayRange = 'day';
+
+function getFilterStart(range) {
+  const now=new Date();
+  if(range==='day'){ const d=new Date(now); d.setHours(0,0,0,0); return d; }
+  if(range==='week'){ const d=new Date(now); d.setDate(d.getDate()-d.getDay()); d.setHours(0,0,0,0); return d; }
+  if(range==='month'){ return new Date(now.getFullYear(),now.getMonth(),1); }
+  if(range==='year'){ return new Date(now.getFullYear(),0,1); }
+  return new Date(0);
+}
+
 function updateTodayCard() {
   const sess=getSess();
-  const todayStr=new Date().toDateString();
-  const todaySess=sess.filter(s=>new Date(s.at).toDateString()===todayStr);
-  const total=todaySess.reduce((a,s)=>a+s.durationSeconds,0);
+  const start=getFilterStart(todayRange);
+  const filtered=sess.filter(s=>new Date(s.at)>=start);
+  const total=filtered.reduce((a,s)=>a+s.durationSeconds,0);
   const card=document.getElementById('todayCard');
   if(total===0){ card.style.display='none'; return; }
   card.style.display='';
   document.getElementById('todayTotal').textContent=fmtHm(total);
   const catTotals={};
-  todaySess.forEach(s=>{ catTotals[s.categoryId]=(catTotals[s.categoryId]||0)+s.durationSeconds; });
+  filtered.forEach(s=>{ catTotals[s.categoryId]=(catTotals[s.categoryId]||0)+s.durationSeconds; });
   const sorted=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
   const maxVal=sorted[0]?.[1]||1;
   const list=document.getElementById('todayCatsList');
@@ -1083,6 +1064,13 @@ function updateTodayCard() {
     list.appendChild(row);
   });
 }
+
+document.getElementById('rangeSeg').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-r]'); if(!btn) return;
+  todayRange=btn.dataset.r;
+  document.querySelectorAll('#rangeSeg button').forEach(b=>b.classList.toggle('active',b===btn));
+  updateTodayCard();
+});
 
 // ─────────────────────────────────────────
 // Chime
