@@ -442,6 +442,13 @@ main {
 .picker-row { display:flex; justify-content:center; gap:16px; }
 .drum-unit { font-size:11px; font-weight:700; color:var(--text-tertiary); margin-top:5px; letter-spacing:0.06em; text-transform:uppercase; }
 .drum-sep-lg { font-size:24px; font-weight:600; color:var(--text-tertiary); display:flex; align-items:center; padding-bottom:4px; }
+/* ── Timer picker slide animation ── */
+.timer-dur-picker { overflow:hidden; max-height:280px; opacity:1; margin-bottom:18px; transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease, margin-bottom 0.5s cubic-bezier(0.22,1,0.36,1); }
+.timer-dur-picker.picker-hidden { max-height:0; opacity:0; pointer-events:none; margin-bottom:0; }
+/* ── Time format toggle ── */
+.time-fmt-btn { display:none; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.10); border-radius:6px; color:var(--text-tertiary); font-size:10px; font-weight:700; font-family:var(--font-mono); padding:2px 7px; cursor:pointer; letter-spacing:0.05em; transition:background 0.15s; margin:3px 0 5px; }
+.time-fmt-btn:hover { background:rgba(255,255,255,0.14); }
+.time-fmt-btn.active-mode { display:block; }
 /* ── Legend subtitle ── */
 .legend-name-col { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
 .legend-subtime { font-size:10px; color:var(--text-tertiary); font-weight:500; line-height:1.3; }
@@ -526,22 +533,9 @@ main {
     </div>
   </div>
 
-  <!-- Timer mode duration input (hidden in other modes) -->
-  <div id="timerDurRow" style="display:none;margin-bottom:18px">
-    <div class="seg" id="timerUnitSeg" style="margin-bottom:10px">
-      <button class="active" data-unit="min">min</button>
-      <button data-unit="hr">hr</button>
-    </div>
-    <div class="picker-row" id="timerMinRow">
-      <div class="drum-col">
-        <div class="drum-wrap" id="timerMinPicker">
-          <div class="drum-fade-t"></div><div class="drum-fade-b"></div>
-          <div class="drum-sel-line top"></div><div class="drum-sel-line bot"></div>
-        </div>
-        <div class="drum-unit">min</div>
-      </div>
-    </div>
-    <div class="picker-row" id="timerHrRow" style="display:none">
+  <!-- Timer mode duration (hidden in other modes, animates out on start) -->
+  <div id="timerDurRow" class="timer-dur-picker" style="display:none">
+    <div class="picker-row">
       <div class="drum-col">
         <div class="drum-wrap" id="timerHrPicker">
           <div class="drum-fade-t"></div><div class="drum-fade-b"></div>
@@ -576,6 +570,7 @@ main {
     </div>
     <div class="ring-center">
       <div class="ring-time" id="ringTime">25:00</div>
+      <button class="time-fmt-btn" id="timeFmtBtn">hms</button>
       <div class="ring-phase" id="ringPhase">Focus</div>
     </div>
   </div>
@@ -896,7 +891,7 @@ function swGetElapsed() { return swElapsed+(timerState==='running'?(Date.now()-s
 
 function updateRing(rem,total) {
   document.getElementById('ringProgress').style.strokeDashoffset = CIRC*(1-(total>0?rem/total:1));
-  document.getElementById('ringTime').textContent = fmtSecs(rem);
+  document.getElementById('ringTime').textContent = timerMode==='timer' ? fmtTimerDisplay(rem) : fmtSecs(rem);
 }
 function updateRingSw(elapsed) {
   document.getElementById('ringProgress').style.strokeDashoffset = Math.max(0, CIRC*(1-Math.min(elapsed/SW_REF,1)));
@@ -925,7 +920,7 @@ function doStart() {
   }
   if(timerState==='idle'){
     if(!hasCat()) return; sessionStart=new Date(); timerPhase='work';
-    if(timerMode==='timer') workTotal=getTimerWorkTotal();
+    if(timerMode==='timer'){ workTotal=getTimerWorkTotal(); document.getElementById('timerDurRow').classList.add('picker-hidden'); }
     remaining=workTotal; document.getElementById('ringProgress').style.stroke='#6BE3A4';
   }
   startTs=Date.now(); startRem=remaining; timerState='running';
@@ -978,8 +973,8 @@ function resetToIdle() {
   if(timerMode==='stopwatch'){
     swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
   } else {
-    if(timerMode==='timer') workTotal=getTimerWorkTotal();
-    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=fmtSecs(workTotal);
+    if(timerMode==='timer'){ document.getElementById('timerDurRow').classList.remove('picker-hidden'); updateTimerFromHrMode(); }
+    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=timerMode==='timer'?fmtTimerDisplay(workTotal):fmtSecs(workTotal);
   }
   setPhaseLabel(getCatLabel(),false); hideCompletion(); renderTimerControls(); updateTodayCard();
 }
@@ -1025,11 +1020,12 @@ document.getElementById('modeSeg').addEventListener('click',e=>{
   document.getElementById('pomodoroPresets').style.display=timerMode==='pomodoro'?'':'none';
   document.getElementById('timerDurRow').style.display=timerMode==='timer'?'':'none';
   const rp=document.getElementById('ringProgress'); rp.style.stroke='#6BE3A4';
+  document.getElementById('timeFmtBtn').classList.toggle('active-mode', timerMode==='timer');
   if(timerMode==='stopwatch'){
     swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
   } else {
-    if(timerMode==='timer') workTotal=getTimerWorkTotal();
-    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=fmtSecs(workTotal);
+    if(timerMode==='timer'){ document.getElementById('timerDurRow').classList.remove('picker-hidden'); updateTimerFromHrMode(); }
+    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=timerMode==='timer'?fmtTimerDisplay(workTotal):fmtSecs(workTotal);
   }
   setPhaseLabel(getCatLabel(),false); renderTimerControls();
 });
@@ -1039,9 +1035,16 @@ document.getElementById('resetBtn').addEventListener('click',doReset);
 document.getElementById('completeBtn').addEventListener('click',doCompleteEarly);
 
 // ── Drum picker state ──
-let timerUnit = 'min';
-let cwDrum, cbDrum, timerMinDrum, timerHrDrum, timerHrMinDrum;
+let cwDrum, cbDrum, timerHrDrum, timerHrMinDrum;
+let timerDisplayFmt = 'ms'; // 'ms' = MM:SS  |  'hms' = H:MM:SS
 
+function fmtTimerDisplay(secs) {
+  secs = Math.max(0, Math.ceil(secs));
+  const h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
+  if(timerDisplayFmt==='hms') return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const tm=Math.floor(secs/60);
+  return `${String(tm).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
 function updateCustomLabel() {
   const wl = cwDrum ? parseInt(cwDrum.getValue()) : 25;
   const bl = cbDrum ? parseInt(cbDrum.getValue()) : 5;
@@ -1054,32 +1057,24 @@ function updateTimerFromHrMode() {
   remaining = workTotal;
   if(timerMode==='timer'&&timerState==='idle') updateRing(workTotal,workTotal);
 }
-function getTimerWorkTotal() {
-  if(timerUnit==='hr'){ updateTimerFromHrMode(); return workTotal; }
-  return (timerMinDrum ? (parseInt(timerMinDrum.getValue())||25) : 25)*60;
-}
+function getTimerWorkTotal() { updateTimerFromHrMode(); return workTotal; }
+
 function initDrumPickers() {
   const wkItems=Array.from({length:120},(_,i)=>String(i+1).padStart(2,'0'));
   cwDrum=makeDrum(document.getElementById('cwPicker'),wkItems,24,()=>{ workTotal=(parseInt(cwDrum.getValue())||25)*60; if(activePreset==='custom'&&timerState==='idle'){ remaining=workTotal; updateRing(workTotal,workTotal); } updateCustomLabel(); });
   const bkItems=Array.from({length:60},(_,i)=>String(i+1).padStart(2,'0'));
   cbDrum=makeDrum(document.getElementById('cbPicker'),bkItems,4,()=>{ breakTotal=(parseInt(cbDrum.getValue())||5)*60; updateCustomLabel(); });
-  const tmItems=Array.from({length:180},(_,i)=>String(i+1).padStart(2,'0'));
-  timerMinDrum=makeDrum(document.getElementById('timerMinPicker'),tmItems,24,()=>{ if(timerMode==='timer'&&timerUnit==='min'&&timerState==='idle'){ workTotal=(parseInt(timerMinDrum.getValue())||25)*60; remaining=workTotal; updateRing(workTotal,workTotal); }});
   const hrItems=Array.from({length:24},(_,i)=>String(i).padStart(2,'0'));
   timerHrDrum=makeDrum(document.getElementById('timerHrPicker'),hrItems,0,updateTimerFromHrMode);
   const hrMinItems=Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
   timerHrMinDrum=makeDrum(document.getElementById('timerHrMinPicker'),hrMinItems,0,updateTimerFromHrMode);
 }
 
-document.getElementById('timerUnitSeg').addEventListener('click',e=>{
-  const btn=e.target.closest('[data-unit]'); if(!btn) return;
-  timerUnit=btn.dataset.unit;
-  document.querySelectorAll('#timerUnitSeg button').forEach(b=>b.classList.toggle('active',b===btn));
-  document.getElementById('timerMinRow').style.display=timerUnit==='min'?'':'none';
-  document.getElementById('timerHrRow').style.display=timerUnit==='hr'?'':'none';
-  if(timerUnit==='hr') updateTimerFromHrMode();
-  else{ workTotal=(timerMinDrum?(parseInt(timerMinDrum.getValue())||25):25)*60; remaining=workTotal; }
-  if(timerState==='idle') updateRing(workTotal,workTotal);
+document.getElementById('timeFmtBtn').addEventListener('click',()=>{
+  timerDisplayFmt = timerDisplayFmt==='ms' ? 'hms' : 'ms';
+  document.getElementById('timeFmtBtn').textContent = timerDisplayFmt==='ms' ? 'hms' : 'ms';
+  const rem = timerMode==='timer' ? getLiveRemaining() : workTotal;
+  document.getElementById('ringTime').textContent = fmtTimerDisplay(rem);
 });
 
 // Pomodoro preset selection
