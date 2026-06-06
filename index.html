@@ -231,7 +231,74 @@ body::after {
 }
 .day-ring-status { font-size: 14px; font-weight: 700; color: var(--text-primary); }
 .day-ring-remaining { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
-.day-ring-hours { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+.day-ring-hours {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary);
+  display: flex; align-items: center; gap: 6px;
+}
+.day-ring-settings-btn {
+  border: 0; background: transparent; color: var(--text-tertiary);
+  font-size: 13px; cursor: pointer; padding: 2px 5px; border-radius: 6px;
+  opacity: 0.5; line-height: 1;
+  transition: opacity 0.18s, background 0.18s, color 0.18s;
+}
+.day-ring-settings-btn:hover { opacity: 1; color: var(--text-primary); background: rgba(255,255,255,0.07); }
+
+/* ---- Schedule modal ---- */
+.sched-modal-bg {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+}
+.sched-modal-bg.show { display: flex; }
+.sched-modal {
+  background: #111213;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  padding: 24px 24px 20px;
+  width: min(300px, 88vw);
+  box-shadow: 0 28px 64px rgba(0,0,0,0.75);
+}
+.sched-modal-title {
+  margin: 0 0 20px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.sched-field { margin-bottom: 14px; }
+.sched-field label {
+  display: block;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-bottom: 7px;
+}
+.sched-field input[type="time"] {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 10px; color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 18px; font-weight: 600;
+  padding: 10px 14px; outline: none; color-scheme: dark;
+  transition: border-color 0.15s;
+}
+.sched-field input[type="time"]:focus { border-color: rgba(255,255,255,0.24); }
+.sched-actions { display: flex; gap: 8px; margin-top: 20px; }
+.sched-save {
+  flex: 1; background: rgba(107,227,164,0.12);
+  border: 1px solid rgba(107,227,164,0.28); color: #6BE3A4;
+  font-family: var(--font); font-size: 13px; font-weight: 700;
+  padding: 10px; border-radius: 10px; cursor: pointer;
+  transition: background 0.15s;
+}
+.sched-save:hover { background: rgba(107,227,164,0.22); }
+.sched-cancel {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08); color: var(--text-tertiary);
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  padding: 10px 14px; border-radius: 10px; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.sched-cancel:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
 @media (max-width: 480px) {
   .day-ring { width: 144px; height: 144px; }
   .day-ring-percent { font-size: 32px; }
@@ -732,7 +799,10 @@ body::after {
     <div class="day-ring-text">
       <div class="day-ring-status"    id="dayRingStatus">Loading…</div>
       <div class="day-ring-remaining" id="dayRingRemaining">—</div>
-      <div class="day-ring-hours">8:00 AM – 12:00 AM</div>
+      <div class="day-ring-hours">
+        <span id="dayRingHoursLabel">8:00 AM – 12:00 AM</span>
+        <button class="day-ring-settings-btn" id="dayRingSettingsBtn" title="Edit sleep schedule" aria-label="Edit sleep schedule">⚙</button>
+      </div>
     </div>
   </div>
 
@@ -797,8 +867,9 @@ body::after {
   // Paste your Anthropic key here to enable ✨ Polish. Empty = falls back to plain add.
   const ANTHROPIC_API_KEY = '';
 
-  const WAKE_HOUR  = 8;
-  const SLEEP_HOUR = 24;
+  const _sched0 = (function(){ try { return JSON.parse(localStorage.getItem('goals:schedule')) || {}; } catch(e){ return {}; } })();
+  let WAKE_HOUR  = _sched0.wakeHour  != null ? _sched0.wakeHour  :  8;
+  let SLEEP_HOUR = _sched0.sleepHour != null ? _sched0.sleepHour : 24;
 
   // ---------- storage helpers ----------
   function storeGet(key) {
@@ -1026,6 +1097,8 @@ body::after {
     const remainingEl = document.getElementById('dayRingRemaining');
 
     clockEl.textContent = formatClock(now);
+    const hoursLbl = document.getElementById('dayRingHoursLabel');
+    if (hoursLbl) hoursLbl.textContent = fmtHour(WAKE_HOUR) + ' – ' + fmtHour(SLEEP_HOUR);
 
     if (hours < WAKE_HOUR) {
       fillEl.setAttribute('stroke-dashoffset', C);
@@ -1566,6 +1639,46 @@ body::after {
     loadTomorrow
   );
 
+  // ---------- Schedule modal ----------
+  function fmtHour(h) {
+    const h24 = h % 24;
+    const h12 = h24 % 12 || 12;
+    return h12 + ':00 ' + (h24 < 12 ? 'AM' : 'PM');
+  }
+  function openSchedModal() {
+    const bg = document.getElementById('schedModalBg');
+    if (!bg) return;
+    const wH = String(WAKE_HOUR).padStart(2, '0');
+    const sH = String(SLEEP_HOUR % 24).padStart(2, '0');
+    document.getElementById('schedWake').value  = wH + ':00';
+    document.getElementById('schedSleep').value = sH + ':00';
+    bg.classList.add('show');
+    document.body.classList.add('topbar-modal-open');
+  }
+  function closeSchedModal() {
+    const bg = document.getElementById('schedModalBg');
+    if (bg) bg.classList.remove('show');
+    document.body.classList.remove('topbar-modal-open');
+  }
+  function saveSchedModal() {
+    const wVal = document.getElementById('schedWake').value;
+    const sVal = document.getElementById('schedSleep').value;
+    const wH = parseInt(wVal, 10);
+    let   sH = parseInt(sVal, 10);
+    if (isNaN(wH) || isNaN(sH)) { closeSchedModal(); return; }
+    if (sH === 0) sH = 24;
+    if (sH <= wH) sH = wH + 1;
+    WAKE_HOUR = wH; SLEEP_HOUR = sH;
+    try { localStorage.setItem('goals:schedule', JSON.stringify({ wakeHour: WAKE_HOUR, sleepHour: SLEEP_HOUR })); } catch(e) {}
+    closeSchedModal();
+    updateDayRing();
+  }
+  document.getElementById('dayRingSettingsBtn').addEventListener('click', openSchedModal);
+  document.getElementById('schedModalBg').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeSchedModal(); });
+  document.getElementById('schedCancel').addEventListener('click', closeSchedModal);
+  document.getElementById('schedSave').addEventListener('click', saveSchedModal);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSchedModal(); });
+
   // ---------- Boot ----------
   rollover();
   processStreak();
@@ -1582,6 +1695,24 @@ body::after {
   });
 })();
 </script>
+<div class="sched-modal-bg" id="schedModalBg" role="dialog" aria-modal="true" aria-label="Sleep schedule settings">
+  <div class="sched-modal">
+    <div class="sched-modal-title">Sleep Schedule</div>
+    <div class="sched-field">
+      <label for="schedWake">Wake up</label>
+      <input type="time" id="schedWake" step="3600">
+    </div>
+    <div class="sched-field">
+      <label for="schedSleep">Bedtime</label>
+      <input type="time" id="schedSleep" step="3600">
+    </div>
+    <div class="sched-actions">
+      <button class="sched-cancel" id="schedCancel">Cancel</button>
+      <button class="sched-save"   id="schedSave">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof initCloudSync !== 'function') return;
