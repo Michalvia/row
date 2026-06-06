@@ -18,7 +18,6 @@
   --text-primary: #FAFAFA;
   --text-secondary: #B8B6B0;
   --text-tertiary: #76746E;
-  --accent: #6BE3A4;
   --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
@@ -30,14 +29,73 @@ html, body {
 }
 main {
   max-width: 480px; margin: 0 auto;
-  padding: 14px max(14px, env(safe-area-inset-right)) 28px max(14px, env(safe-area-inset-left));
+  padding: 14px max(14px, env(safe-area-inset-right)) 90px max(14px, env(safe-area-inset-left));
+}
+
+/* ── Category chips ── */
+.f-chip-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.f-chip-scroll {
+  display: flex; gap: 6px; flex-wrap: wrap; flex: 1;
+}
+.f-cat-chip {
+  padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border-strong);
+  background: rgba(255,255,255,0.05); color: var(--text-tertiary);
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+  white-space: nowrap; position: relative;
+}
+.f-cat-chip.active { color: #FAFAFA; }
+.f-chip-add {
+  padding: 7px 12px; border-radius: 20px; border: 1px dashed var(--border-strong);
+  background: none; color: var(--text-tertiary); font-family: var(--font); font-size: 13px;
+  cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+}
+.f-chip-add:hover { color: var(--text-secondary); }
+.f-chip-edit-btn {
+  padding: 7px 12px; border-radius: 20px; border: 1px solid var(--border);
+  background: none; color: var(--text-tertiary); font-family: var(--font); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+}
+.f-chip-edit-btn:hover { color: var(--text-secondary); }
+.chip-del {
+  display: none; position: absolute; top: -5px; right: -5px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #FF6B6B; color: #fff; font-size: 11px; font-weight: 800;
+  align-items: center; justify-content: center; cursor: pointer;
+  line-height: 1; border: none;
+}
+.edit-mode .chip-del { display: flex; }
+.f-new-cat-form {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px; margin-bottom: 10px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.f-new-cat-input {
+  width: 100%; padding: 9px 12px; outline: none;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong);
+  border-radius: 8px; color: var(--text-primary); font-family: var(--font); font-size: 14px;
+}
+.f-new-cat-input::placeholder { color: var(--text-tertiary); }
+.f-new-cat-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.f-swatch {
+  width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent;
+  cursor: pointer; transition: transform 0.12s, border-color 0.12s; flex-shrink: 0;
+}
+.f-swatch:hover { transform: scale(1.15); }
+.f-swatch.sel { border-color: rgba(255,255,255,0.65); transform: scale(1.1); }
+.f-new-cat-save {
+  padding: 9px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-strong);
+  border-radius: 8px; color: var(--text-secondary); font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; width: 100%;
 }
 
 /* ── Mode tabs ── */
 .f-mode-tabs {
   display: flex; gap: 3px;
   background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-  border-radius: 12px; padding: 4px; margin-bottom: 12px;
+  border-radius: 12px; padding: 4px; margin-bottom: 10px;
 }
 .f-mode-tab {
   flex: 1; padding: 8px 0; background: none; border: none; border-radius: 9px;
@@ -58,19 +116,15 @@ main {
   color: var(--text-tertiary); font-family: var(--font); font-size: 12px; font-weight: 600;
   cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent;
 }
-.f-cycle-btn.active {
-  background: rgba(107,227,164,0.12); border-color: rgba(107,227,164,0.35); color: #6BE3A4;
-}
-.f-cd-row {
-  display: flex; align-items: flex-end; justify-content: center; gap: 3px; margin-bottom: 14px;
-}
+.f-cycle-btn.active { background: rgba(107,227,164,0.12); border-color: rgba(107,227,164,0.35); color: #6BE3A4; }
+.f-cd-row { display: flex; align-items: flex-end; justify-content: center; gap: 3px; margin-bottom: 14px; }
 .f-cd-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .f-cd-num {
   width: 66px; padding: 8px 4px; text-align: center; outline: none;
   background: rgba(255,255,255,0.06); border: 1px solid var(--border-strong);
   border-radius: 10px; color: var(--text-primary);
   font-family: var(--font-mono); font-size: 26px; font-weight: 700;
-  -moz-appearance: textfield; transition: border-color 0.15s;
+  -moz-appearance: textfield;
 }
 .f-cd-num::-webkit-outer-spin-button,
 .f-cd-num::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -101,6 +155,10 @@ main {
   cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent;
 }
 .f-btn-secondary:hover { background: rgba(255,255,255,0.09); }
+.f-saved-notice {
+  font-size: 13px; color: #6BE3A4; text-align: center; min-height: 18px; margin-top: 10px;
+  font-weight: 600;
+}
 .f-lap-list {
   list-style: none; margin-top: 14px; max-height: 148px; overflow-y: auto;
   display: flex; flex-direction: column; gap: 4px;
@@ -112,7 +170,47 @@ main {
 }
 .f-lap-item.latest { color: var(--text-primary); }
 
-/* ── Cards ── */
+/* ── iOS Drum picker ── */
+.drum-wrap {
+  position: relative; overflow: hidden; border-radius: 12px;
+  touch-action: none; cursor: ns-resize; width: 100%;
+  user-select: none; -webkit-user-select: none;
+}
+.drum-inner { position: absolute; left: 0; right: 0; top: 0; will-change: transform; }
+.drum-item {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-weight: 600;
+  color: rgba(255,255,255,0.2); transition: none;
+  user-select: none; -webkit-user-select: none;
+}
+.drum-item.active { color: var(--text-primary); font-weight: 700; }
+.drum-sel {
+  position: absolute; top: 50%; left: 6px; right: 6px;
+  transform: translateY(-50%); pointer-events: none;
+  background: rgba(255,255,255,0.08); border-radius: 8px;
+  border-top: 0.5px solid rgba(255,255,255,0.14);
+  border-bottom: 0.5px solid rgba(255,255,255,0.14);
+}
+.drum-fade-t, .drum-fade-b {
+  position: absolute; left: 0; right: 0; pointer-events: none; z-index: 2;
+}
+/* Drums inside .f-card (dark card background ~#0b0b0c) */
+.drum-fade-t { top: 0; background: linear-gradient(to bottom, #0b0b0c 10%, transparent); }
+.drum-fade-b { bottom: 0; background: linear-gradient(to top, #0b0b0c 10%, transparent); }
+/* Drums inside .mc-panel (slightly lighter) */
+.mc-panel .drum-fade-t { background: linear-gradient(to bottom, #131416 10%, transparent); }
+.mc-panel .drum-fade-b { background: linear-gradient(to top, #131416 10%, transparent); }
+
+/* Time drum row */
+.f-drum-time-row {
+  display: flex; align-items: flex-start; gap: 4px; margin: 12px 0 4px;
+}
+.f-drum-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.f-drum-col-ap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 0 0 68px; }
+.f-drum-sep { font-size: 20px; font-weight: 700; color: var(--text-tertiary); padding-top: 70px; flex-shrink: 0; }
+.f-drum-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.08em; }
+
+/* ── Log Past Session card ── */
 .f-card {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 18px; padding: 18px; margin-bottom: 10px;
@@ -121,20 +219,13 @@ main {
   font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-tertiary); margin-bottom: 14px;
 }
-
-/* ── Timer log card ── */
-.f-pending {
-  text-align: center; padding: 8px 12px 12px;
-  font-size: 13px; color: var(--text-tertiary);
+.f-picker-section { margin-bottom: 14px; }
+.f-picker-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-bottom: 7px;
 }
-.f-pending-dur {
-  font-family: var(--font-mono); font-size: 32px; font-weight: 700;
-  color: #6BE3A4; letter-spacing: -1px; display: block; margin-bottom: 4px;
-}
-.f-pending-hint { font-size: 12px; color: var(--text-tertiary); }
-.f-log-ok {
-  font-size: 13px; color: #6BE3A4; text-align: center;
-  min-height: 18px; margin-top: 8px;
+.f-picker-divider {
+  height: 1px; background: var(--border); margin: 14px 0;
 }
 .f-row { display: flex; gap: 8px; margin-bottom: 10px; }
 .f-cat-select {
@@ -151,62 +242,39 @@ main {
   transition: all 0.15s; -webkit-tap-highlight-color: transparent;
 }
 .f-icon-btn:hover { background: rgba(255,255,255,0.09); }
-.f-icon-btn.open { color: #6BE3A4; border-color: rgba(107,227,164,0.35); background: rgba(107,227,164,0.08); }
+.f-man-dur {
+  font-family: var(--font-mono); font-size: 30px; font-weight: 700;
+  color: var(--text-primary); text-align: center; letter-spacing: -1px;
+  margin: 8px 0 14px; min-height: 38px;
+}
+.f-man-dur.empty { color: var(--text-tertiary); font-size: 22px; font-weight: 400; letter-spacing: 0; }
+.f-log-err { font-size: 12px; color: #FF8A8A; min-height: 16px; margin-bottom: 8px; }
+.f-log-btn {
+  width: 100%; padding: 12px;
+  background: rgba(107,227,164,0.10); border: 1px solid rgba(107,227,164,0.28);
+  border-radius: 12px; color: #6BE3A4; font-family: var(--font); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: background 0.15s;
+}
+.f-log-btn:hover { background: rgba(107,227,164,0.18); }
 
-/* New category form */
-.f-cat-form {
-  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px; margin-bottom: 10px;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.f-cat-input {
-  width: 100%; padding: 9px 12px; outline: none;
-  background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong);
-  border-radius: 8px; color: var(--text-primary); font-family: var(--font); font-size: 14px;
-  transition: border-color 0.15s;
-}
-.f-cat-input::placeholder { color: var(--text-tertiary); }
-.f-cat-input:focus { border-color: rgba(255,255,255,0.22); }
-.f-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
-.f-swatch {
-  width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent;
-  cursor: pointer; transition: transform 0.12s, border-color 0.12s; flex-shrink: 0;
-}
-.f-swatch:hover { transform: scale(1.15); }
-.f-swatch.sel { border-color: rgba(255,255,255,0.6); transform: scale(1.1); }
-.f-save-cat {
-  padding: 9px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-strong);
-  border-radius: 8px; color: var(--text-secondary); font-family: var(--font); font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: background 0.15s; width: 100%;
-}
-.f-save-cat:hover { background: rgba(255,255,255,0.10); }
-
-/* ── Apple-style calendar date picker ── */
-.mc-field { margin-bottom: 8px; }
+/* ── Calendar date picker ── */
 .mc-btn {
-  width: 100%; padding: 11px 14px; text-align: left;
+  width: 100%; padding: 10px 14px; text-align: left;
   background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong);
   border-radius: 12px; font-family: var(--font); cursor: pointer;
   display: flex; justify-content: space-between; align-items: center;
-  transition: background 0.15s; -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s; -webkit-tap-highlight-color: transparent; margin-bottom: 0;
 }
 .mc-btn:hover { background: rgba(255,255,255,0.09); }
 .mc-btn-inner { display: flex; flex-direction: column; gap: 1px; }
-.mc-btn-label {
-  font-size: 9px; font-weight: 700; letter-spacing: 0.10em;
-  text-transform: uppercase; color: var(--text-tertiary);
-}
+.mc-btn-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-tertiary); }
 .mc-btn-val { font-size: 14px; color: var(--text-primary); font-weight: 500; }
-.mc-btn-chevron {
-  color: var(--text-tertiary); font-size: 11px; transition: transform 0.2s ease;
-  flex-shrink: 0; margin-left: 8px;
-}
-.mc-btn.open .mc-btn-chevron { transform: rotate(180deg); }
+.mc-btn-chev { color: var(--text-tertiary); font-size: 11px; transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; }
+.mc-btn.open .mc-btn-chev { transform: rotate(180deg); }
 
 .mc-panel {
   background: rgba(18,19,21,0.98); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 16px; padding: 14px 12px 12px;
-  margin-bottom: 8px; overflow: hidden;
+  border-radius: 16px; padding: 14px 12px 12px; margin-top: 6px;
   box-shadow: 0 16px 56px rgba(0,0,0,0.65), 0 2px 10px rgba(0,0,0,0.4);
   animation: mc-drop 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -214,31 +282,19 @@ main {
   from { opacity: 0; transform: translateY(-8px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-
-/* Month header */
-.mc-hdr {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
-}
+.mc-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .mc-nav-btn {
   width: 30px; height: 30px; border: none;
   background: rgba(255,255,255,0.08); border-radius: 50%;
-  color: var(--text-secondary); font-size: 15px; line-height: 1;
+  color: var(--text-secondary); font-size: 15px;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background 0.12s, opacity 0.12s; -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+  transition: background 0.12s; -webkit-tap-highlight-color: transparent; flex-shrink: 0;
 }
 .mc-nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.15); }
 .mc-nav-btn:disabled { opacity: 0.18; cursor: default; }
 .mc-month-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-
-/* Day grid */
-.mc-weekdays {
-  display: grid; grid-template-columns: repeat(7, 1fr);
-  text-align: center; margin-bottom: 4px;
-}
-.mc-wd {
-  font-size: 10px; font-weight: 600; color: var(--text-tertiary);
-  letter-spacing: 0.03em; padding: 2px 0;
-}
+.mc-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 4px; }
+.mc-wd { font-size: 10px; font-weight: 600; color: var(--text-tertiary); letter-spacing: 0.03em; padding: 2px 0; }
 .mc-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 .mc-day {
   aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
@@ -253,49 +309,9 @@ main {
   content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
   width: 3px; height: 3px; border-radius: 50%; background: #6BE3A4;
 }
-.mc-day.sel {
-  background: #6BE3A4 !important; color: #050506 !important; font-weight: 800;
-}
+.mc-day.sel { background: #6BE3A4 !important; color: #050506 !important; font-weight: 800; }
 .mc-day.sel.today::after { display: none; }
 .mc-other { opacity: 0.18; cursor: default; pointer-events: none; }
-
-/* Time picker inside calendar */
-.mc-time-row {
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-  margin-top: 13px; padding-top: 13px; border-top: 1px solid var(--border);
-}
-.mc-time-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.mc-time-num {
-  width: 56px; padding: 8px 0; text-align: center; outline: none;
-  background: rgba(255,255,255,0.07); border: 1px solid var(--border-strong);
-  border-radius: 10px; color: var(--text-primary);
-  font-family: var(--font-mono); font-size: 22px; font-weight: 700;
-  -moz-appearance: textfield; transition: border-color 0.15s; cursor: ns-resize;
-}
-.mc-time-num::-webkit-outer-spin-button,
-.mc-time-num::-webkit-inner-spin-button { -webkit-appearance: none; }
-.mc-time-num:focus { border-color: rgba(255,255,255,0.26); cursor: text; }
-.mc-time-unit {
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
-  color: var(--text-tertiary); letter-spacing: 0.07em;
-}
-.mc-time-sep { font-size: 22px; font-weight: 700; color: var(--text-tertiary); padding-bottom: 18px; }
-
-/* ── Manual log card ── */
-.f-man-dur {
-  font-family: var(--font-mono); font-size: 30px; font-weight: 700;
-  color: var(--text-primary); text-align: center; letter-spacing: -1px;
-  margin: 2px 0 14px; min-height: 38px;
-}
-.f-man-dur.empty { color: var(--text-tertiary); font-size: 22px; font-weight: 400; letter-spacing: 0; }
-.f-log-err { font-size: 12px; color: #FF8A8A; min-height: 16px; margin-bottom: 8px; }
-.f-log-btn {
-  width: 100%; padding: 12px;
-  background: rgba(107,227,164,0.10); border: 1px solid rgba(107,227,164,0.28);
-  border-radius: 12px; color: #6BE3A4; font-family: var(--font); font-size: 14px; font-weight: 700;
-  cursor: pointer; transition: background 0.15s;
-}
-.f-log-btn:hover { background: rgba(107,227,164,0.18); }
 
 /* ── Analytics ── */
 .f-period-tabs {
@@ -309,23 +325,47 @@ main {
   cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent;
 }
 .f-period-tab.active { background: rgba(255,255,255,0.09); color: var(--text-primary); }
-.f-charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-@media (max-width: 340px) { .f-charts-row { grid-template-columns: 1fr; } }
-.f-chart-wrap {
-  background: rgba(255,255,255,0.025); border: 1px solid var(--border);
-  border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 6px;
-}
-.f-chart-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-tertiary); }
+.f-line-wrap { position: relative; margin-bottom: 16px; }
 canvas { display: block; width: 100%; }
-.f-legend { display: flex; flex-wrap: wrap; gap: 8px; }
-.f-legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+.f-tooltip {
+  position: fixed; display: none;
+  background: rgba(18,19,21,0.96); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px; padding: 8px 12px; pointer-events: none; z-index: 200;
+  font-size: 12px; color: var(--text-secondary); white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.f-tooltip-date { font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 4px; }
+.f-tooltip-row { display: flex; align-items: center; gap: 6px; line-height: 1.6; }
+.f-tooltip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.f-donut-row { display: flex; align-items: center; gap: 16px; }
+.f-donut-wrap { flex-shrink: 0; width: 150px; }
+.f-legend-pills { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.f-legend-pill {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  background: rgba(255,255,255,0.03); border-radius: 9px;
+}
 .f-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.f-legend-val { color: var(--text-tertiary); font-size: 11px; }
+.f-legend-name { flex: 1; font-size: 12px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.f-legend-val { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
+.f-legend-pct { font-size: 10px; color: var(--text-tertiary); min-width: 30px; text-align: right; }
 .f-no-data { font-size: 12px; color: var(--text-tertiary); text-align: center; padding: 18px 0; }
 </style>
 </head>
 <body>
 <main>
+
+  <!-- Category chip bar -->
+  <div class="f-chip-bar" id="fChipBar">
+    <div class="f-chip-scroll" id="fChipScroll"></div>
+    <button class="f-chip-add" id="fChipAdd">+ Add</button>
+    <button class="f-chip-edit-btn" id="fChipEditBtn">Edit</button>
+  </div>
+  <div id="fNewCatForm" style="display:none" class="f-new-cat-form">
+    <input type="text" class="f-new-cat-input" id="fNewCatName" placeholder="Category name…" maxlength="30">
+    <div class="f-new-cat-swatches" id="fNewCatSwatches"></div>
+    <button class="f-new-cat-save" id="fNewCatSave">Save Category</button>
+  </div>
 
   <!-- Mode tabs -->
   <div class="f-mode-tabs" id="fModeTabs">
@@ -364,92 +404,102 @@ canvas { display: block; width: 100%; }
       <button class="f-btn-secondary" id="fResetBtn">↺&ensp;Reset</button>
       <button class="f-btn-secondary" id="fLapBtn" style="display:none">Lap</button>
     </div>
+    <div class="f-saved-notice" id="fSavedNotice"></div>
     <ul class="f-lap-list" id="fLapList"></ul>
   </div>
 
-  <!-- Timer log card -->
-  <div class="f-card">
-    <div class="f-card-title">Log Session</div>
-    <div class="f-pending" id="fPending">
-      <span class="f-pending-hint">Complete a timer session, then pick a category below to save it instantly.</span>
-    </div>
-    <div class="f-row">
-      <select class="f-cat-select" id="fCatSelect">
-        <option value="">— Pick a category —</option>
-      </select>
-      <button class="f-icon-btn" id="fCatNewBtn" title="New category">+</button>
-    </div>
-    <div class="f-cat-form" id="fCatForm" style="display:none">
-      <input type="text" class="f-cat-input" id="fCatName" placeholder="Category name…" maxlength="30">
-      <div class="f-swatches" id="fSwatches"></div>
-      <button class="f-save-cat" id="fSaveCatBtn">Save Category</button>
-    </div>
-    <div class="f-log-ok" id="fLogOk"></div>
-  </div>
-
-  <!-- Manual past-session log card -->
+  <!-- Log Past Session -->
   <div class="f-card">
     <div class="f-card-title">Log Past Session</div>
     <div class="f-row">
       <select class="f-cat-select" id="fManCatSelect">
-        <option value="">— Pick a category —</option>
+        <option value="">— Category —</option>
       </select>
-      <button class="f-icon-btn" id="fManCatNewBtn" title="New category">+</button>
+      <button class="f-icon-btn" id="fManAddCatBtn" title="New category">+</button>
     </div>
-    <div class="f-cat-form" id="fManCatForm" style="display:none">
-      <input type="text" class="f-cat-input" id="fManCatName" placeholder="Category name…" maxlength="30">
-      <div class="f-swatches" id="fManSwatches"></div>
-      <button class="f-save-cat" id="fManSaveCatBtn">Save Category</button>
+
+    <!-- Started picker -->
+    <div class="f-picker-section" id="manStartSection">
+      <div class="f-picker-label">Started</div>
+      <div id="manStartDateWrap"></div>
+      <div class="f-drum-time-row" id="manStartDrums"></div>
     </div>
-    <!-- Calendar pickers injected by JS -->
-    <div id="manStartWrap"></div>
-    <div id="manEndWrap"></div>
+
+    <div class="f-picker-divider"></div>
+
+    <!-- Stopped picker -->
+    <div class="f-picker-section" id="manEndSection">
+      <div class="f-picker-label">Stopped</div>
+      <div id="manEndDateWrap"></div>
+      <div class="f-drum-time-row" id="manEndDrums"></div>
+    </div>
+
     <div class="f-man-dur empty" id="fManDur">—</div>
     <div class="f-log-err" id="fManErr"></div>
     <button class="f-log-btn" id="fManLogBtn">Save Past Session</button>
   </div>
 
-  <!-- Analytics card -->
+  <!-- Analytics -->
   <div class="f-card">
     <div class="f-card-title">Analytics</div>
     <div class="f-period-tabs" id="fPeriodTabs">
-      <button class="f-period-tab active" data-period="today">Today</button>
+      <button class="f-period-tab active" data-period="today">Day</button>
       <button class="f-period-tab"        data-period="7d">7 Days</button>
       <button class="f-period-tab"        data-period="month">Month</button>
       <button class="f-period-tab"        data-period="year">Year</button>
     </div>
-    <div class="f-charts-row">
-      <div class="f-chart-wrap">
-        <div class="f-chart-lbl">Time by Category</div>
-        <canvas id="fBarCanvas"></canvas>
-      </div>
-      <div class="f-chart-wrap">
-        <div class="f-chart-lbl">Proportion</div>
-        <canvas id="fDonutCanvas"></canvas>
-      </div>
+    <div class="f-line-wrap">
+      <canvas id="fLineCanvas"></canvas>
     </div>
-    <div class="f-legend" id="fLegend"></div>
+    <div class="f-donut-row">
+      <div class="f-donut-wrap"><canvas id="fDonutCanvas"></canvas></div>
+      <div class="f-legend-pills" id="fLegend"></div>
+    </div>
   </div>
 
 </main>
+
+<!-- Tooltip (appended to body) -->
+<div class="f-tooltip" id="fTooltip"></div>
+
 <script>
 (function () {
   'use strict';
 
-  // ── Storage ───────────────────────────────────────────────────
+  // ── Constants ─────────────────────────────────────────────────
   const K_CATS = 'focus:categories';
   const K_SESS = 'focus:sessions';
-  const PALETTE = [
-    '#6BE3A4','#7B9CEF','#FFB347','#FF6B6B','#C77DFF',
-    '#38B6FF','#FCD34D','#F8A4C8','#6EE7B7','#FDBA74'
-  ];
+  const PALETTE = ['#6BE3A4','#7B9CEF','#FFB347','#FF6B6B','#C77DFF','#38B6FF','#FCD34D','#F8A4C8','#6EE7B7','#FDBA74'];
+  const DEFAULT_CAT = { id: 'cat_work', name: 'Work', color: '#6BE3A4', builtin: true };
 
+  // ── Storage ───────────────────────────────────────────────────
   function getCats() { try { return JSON.parse(localStorage.getItem(K_CATS)) || []; } catch { return []; } }
   function getSess() { try { return JSON.parse(localStorage.getItem(K_SESS)) || []; } catch { return []; } }
   function saveCats(d) { try { localStorage.setItem(K_CATS, JSON.stringify(d)); } catch {} }
   function saveSess(d) { try { localStorage.setItem(K_SESS, JSON.stringify(d)); } catch {} }
 
-  // ── Completion chime ──────────────────────────────────────────
+  function ensureDefaults() {
+    if (!getCats().length) saveCats([DEFAULT_CAT]);
+  }
+
+  function getAllCats() { return getCats(); }
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function pad(n) { return String(Math.floor(n)).padStart(2, '0'); }
+  function fmtS(s) {
+    s = Math.max(0, Math.round(s));
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    return h > 0 ? h + ':' + pad(m) + ':' + pad(ss) : pad(m) + ':' + pad(ss);
+  }
+  function fmtMs(ms) { return fmtS(ms / 1000); }
+  function durStr(s) { return s >= 3600 ? (s / 3600).toFixed(1) + 'h' : Math.round(s / 60) + 'm'; }
+
+  function hexToRgba(hex, a) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+
+  // ── Chime ────────────────────────────────────────────────────
   function playChime() {
     try {
       const ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -467,18 +517,423 @@ canvas { display: block; width: 100%; }
     } catch (e) {}
   }
 
+  // ── iOS Drum Picker Factory ───────────────────────────────────
+  const ITEM_H = 38;
+  const DRUM_H = 190;   // 5 visible items
+  const CTR = DRUM_H / 2;
+
+  function makeDrum(wrapEl, items, initIdx, onChange) {
+    wrapEl.style.height = DRUM_H + 'px';
+
+    let curIdx = Math.max(0, Math.min(initIdx, items.length - 1));
+    let currentTy = getTy(curIdx);
+    let animId = null;
+
+    const inner = document.createElement('div'); inner.className = 'drum-inner';
+    items.forEach(lbl => {
+      const el = document.createElement('div');
+      el.className = 'drum-item'; el.textContent = lbl;
+      el.style.height = ITEM_H + 'px'; el.style.fontSize = '19px';
+      inner.appendChild(el);
+    });
+
+    const sel = document.createElement('div'); sel.className = 'drum-sel';
+    sel.style.height = ITEM_H + 'px';
+
+    const ft = document.createElement('div'); ft.className = 'drum-fade-t';
+    ft.style.height = Math.floor(DRUM_H * 0.40) + 'px';
+    const fb = document.createElement('div'); fb.className = 'drum-fade-b';
+    fb.style.height = Math.floor(DRUM_H * 0.40) + 'px';
+
+    wrapEl.appendChild(sel);
+    wrapEl.appendChild(inner);
+    wrapEl.appendChild(ft);
+    wrapEl.appendChild(fb);
+
+    function getTy(idx) { return CTR - idx * ITEM_H - ITEM_H / 2; }
+
+    function applyTy(y, animated) {
+      if (animId) { cancelAnimationFrame(animId); animId = null; }
+      currentTy = y;
+      inner.style.transition = animated ? 'transform 0.32s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none';
+      inner.style.transform = 'translateY(' + y + 'px)';
+      updateActiveItem(y);
+    }
+
+    function updateActiveItem(y) {
+      const active = Math.round((CTR - y - ITEM_H / 2) / ITEM_H);
+      inner.querySelectorAll('.drum-item').forEach((el, i) => {
+        const dist = Math.abs(i - active);
+        el.classList.toggle('active', i === active);
+        // Fade items by distance from center
+        const opacity = Math.max(0.12, 1 - dist * 0.38);
+        el.style.opacity = opacity;
+      });
+    }
+
+    function snapTo(y) {
+      let idx = Math.round((CTR - y - ITEM_H / 2) / ITEM_H);
+      idx = Math.max(0, Math.min(items.length - 1, idx));
+      curIdx = idx;
+      applyTy(getTy(idx), true);
+      onChange(idx);
+    }
+
+    // Drag state
+    let dragging = false, dragStartY = 0, dragStartTy = 0;
+    let velY = 0, lastY = 0, lastT = 0;
+
+    function onStart(clientY) {
+      if (animId) { cancelAnimationFrame(animId); animId = null; }
+      inner.style.transition = 'none';
+      dragging = true; dragStartY = clientY; dragStartTy = currentTy;
+      velY = 0; lastY = clientY; lastT = Date.now();
+    }
+
+    function onMove(clientY) {
+      if (!dragging) return;
+      const now = Date.now(), dt = now - lastT || 1;
+      velY = (clientY - lastY) / dt;
+      lastY = clientY; lastT = now;
+      let y = dragStartTy + (clientY - dragStartY);
+      // Rubber-band at edges
+      const minY = getTy(items.length - 1), maxY = getTy(0);
+      if (y < minY) y = minY + (y - minY) * 0.18;
+      if (y > maxY) y = maxY + (y - maxY) * 0.18;
+      currentTy = y;
+      inner.style.transform = 'translateY(' + y + 'px)';
+      updateActiveItem(y);
+    }
+
+    function onEnd() {
+      if (!dragging) return;
+      dragging = false;
+      let y = currentTy;
+      const decel = 0.935;
+      function momentum() {
+        if (Math.abs(velY) < 0.08) { snapTo(y); return; }
+        y += velY * 16; velY *= decel;
+        const minY = getTy(items.length - 1), maxY = getTy(0);
+        if (y < minY) { y = minY; velY = 0; }
+        if (y > maxY) { y = maxY; velY = 0; }
+        currentTy = y;
+        inner.style.transform = 'translateY(' + y + 'px)';
+        updateActiveItem(y);
+        animId = requestAnimationFrame(momentum);
+      }
+      animId = requestAnimationFrame(momentum);
+    }
+
+    wrapEl.addEventListener('pointerdown', e => { e.preventDefault(); wrapEl.setPointerCapture(e.pointerId); onStart(e.clientY); });
+    wrapEl.addEventListener('pointermove', e => { onMove(e.clientY); });
+    wrapEl.addEventListener('pointerup', onEnd);
+    wrapEl.addEventListener('pointercancel', onEnd);
+
+    // Tap individual items
+    inner.addEventListener('click', e => {
+      const el = e.target.closest('.drum-item'); if (!el) return;
+      const idx = Array.from(inner.children).indexOf(el);
+      if (idx >= 0) { curIdx = idx; applyTy(getTy(idx), true); onChange(idx); }
+    });
+
+    applyTy(getTy(curIdx), false);
+
+    return {
+      getIdx() { return curIdx; },
+      getValue() { return items[curIdx]; },
+      setIdx(idx, animated = false) {
+        curIdx = Math.max(0, Math.min(items.length - 1, idx));
+        applyTy(getTy(curIdx), animated);
+      }
+    };
+  }
+
+  // ── Time drum helper — builds H/M/AP drums in a row ──────────
+  function makeTimeDrums(rowEl, initDate, onChange) {
+    rowEl.innerHTML = '';
+
+    const h24 = initDate.getHours(), m = initDate.getMinutes();
+    const initAP = h24 >= 12 ? 1 : 0;
+    const initH12 = (h24 % 12) || 12;
+
+    const hourItems = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+    const minItems  = Array.from({length:60}, (_, i) => pad(i));
+    const apItems   = ['AM','PM'];
+
+    function makeCol(label, isMini) {
+      const col = document.createElement('div');
+      col.className = isMini ? 'f-drum-col-ap' : 'f-drum-col';
+      const wrap = document.createElement('div'); wrap.className = 'drum-wrap';
+      const lbl  = document.createElement('div'); lbl.className = 'f-drum-lbl'; lbl.textContent = label;
+      col.append(wrap, lbl);
+      rowEl.appendChild(col);
+      return wrap;
+    }
+
+    const hWrap = makeCol('hr', false);
+    const sep   = document.createElement('div'); sep.className = 'f-drum-sep'; sep.textContent = ':';
+    rowEl.appendChild(sep);
+    const mWrap = makeCol('min', false);
+    const apWrap = makeCol('', true);
+
+    const hDrum  = makeDrum(hWrap,  hourItems, initH12 - 1, notify);
+    const mDrum  = makeDrum(mWrap,  minItems,  m,           notify);
+    const apDrum = makeDrum(apWrap, apItems,   initAP,      notify);
+
+    function getDate(baseDate) {
+      const h12 = hDrum.getIdx() + 1;
+      const min  = mDrum.getIdx();
+      const isAM = apDrum.getIdx() === 0;
+      const h24  = isAM ? (h12 % 12) : (h12 % 12 + 12);
+      const d = new Date(baseDate || new Date());
+      d.setHours(h24, min, 0, 0);
+      return d;
+    }
+
+    function notify() { onChange(); }
+
+    function setTime(d) {
+      const h = d.getHours(), m = d.getMinutes();
+      hDrum.setIdx(((h % 12) || 12) - 1, false);
+      mDrum.setIdx(m, false);
+      apDrum.setIdx(h >= 12 ? 1 : 0, false);
+    }
+
+    return { getDate, setTime };
+  }
+
+  // ── Calendar date-button picker ───────────────────────────────
+  const MONTH_NAMES  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const WEEK_DAYS    = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const THIS_YEAR    = new Date().getFullYear();
+  const allDateBtns  = [];
+
+  function makeDateBtn(containerEl, labelText, initDate, onChange) {
+    let selDate = new Date(initDate); selDate.setSeconds(0, 0);
+    let viewM = selDate.getMonth();
+    const todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
+
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'mc-btn';
+    btn.innerHTML = '<div class="mc-btn-inner"><div class="mc-btn-lbl">' + labelText + '</div><div class="mc-btn-val"></div></div><span class="mc-btn-chev">▾</span>';
+    const btnVal = btn.querySelector('.mc-btn-val');
+
+    const panel = document.createElement('div');
+    panel.className = 'mc-panel'; panel.style.display = 'none';
+
+    const hdr = document.createElement('div'); hdr.className = 'mc-hdr';
+    const prevBtn = document.createElement('button'); prevBtn.type='button'; prevBtn.className='mc-nav-btn'; prevBtn.textContent='‹';
+    const monthName = document.createElement('div'); monthName.className='mc-month-name';
+    const nextBtn = document.createElement('button'); nextBtn.type='button'; nextBtn.className='mc-nav-btn'; nextBtn.textContent='›';
+    hdr.append(prevBtn, monthName, nextBtn);
+
+    const wdRow = document.createElement('div'); wdRow.className = 'mc-weekdays';
+    WEEK_DAYS.forEach(d => { const s=document.createElement('div'); s.className='mc-wd'; s.textContent=d; wdRow.appendChild(s); });
+
+    const daysGrid = document.createElement('div'); daysGrid.className = 'mc-days';
+
+    panel.append(hdr, wdRow, daysGrid);
+    containerEl.append(btn, panel);
+
+    function daysInMonth(m) { return new Date(THIS_YEAR, m+1, 0).getDate(); }
+
+    function updateBtn() {
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      btnVal.textContent = days[selDate.getDay()] + ', ' + SHORT_MONTHS[selDate.getMonth()] + ' ' + selDate.getDate();
+    }
+
+    function renderGrid() {
+      daysGrid.innerHTML = '';
+      prevBtn.disabled = viewM === 0; nextBtn.disabled = viewM === 11;
+      monthName.textContent = MONTH_NAMES[viewM] + ' ' + THIS_YEAR;
+      const firstDay = new Date(THIS_YEAR, viewM, 1).getDay();
+      const daysCount = daysInMonth(viewM);
+      const prevCount = viewM > 0 ? daysInMonth(viewM - 1) : 0;
+      for (let i = 0; i < firstDay; i++) {
+        const c = document.createElement('div'); c.className = 'mc-day mc-other';
+        if (viewM > 0) c.textContent = prevCount - firstDay + 1 + i;
+        daysGrid.appendChild(c);
+      }
+      for (let d = 1; d <= daysCount; d++) {
+        const c = document.createElement('div'); c.className = 'mc-day'; c.textContent = d;
+        const cd = new Date(THIS_YEAR, viewM, d); cd.setHours(0,0,0,0);
+        if (+cd === +todayMidnight) c.classList.add('today');
+        if (viewM === selDate.getMonth() && d === selDate.getDate()) c.classList.add('sel');
+        c.addEventListener('click', () => {
+          selDate = new Date(THIS_YEAR, viewM, d, selDate.getHours(), selDate.getMinutes(), 0, 0);
+          renderGrid(); updateBtn(); onChange(selDate);
+        });
+        daysGrid.appendChild(c);
+      }
+      const trailing = 42 - (firstDay + daysCount);
+      for (let i = 1; i <= trailing; i++) {
+        const c = document.createElement('div'); c.className = 'mc-day mc-other';
+        if (viewM < 11) c.textContent = i;
+        daysGrid.appendChild(c);
+      }
+    }
+
+    function openPanel()  { panel.style.display = ''; btn.classList.add('open'); viewM = selDate.getMonth(); renderGrid(); }
+    function closePanel() { panel.style.display = 'none'; btn.classList.remove('open'); }
+
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      allDateBtns.forEach(b => { if (b !== api) b.close(); });
+      panel.style.display === 'none' ? openPanel() : closePanel();
+    });
+    panel.addEventListener('click', e => e.stopPropagation());
+    prevBtn.addEventListener('click', e => { e.stopPropagation(); if (viewM > 0) { viewM--; renderGrid(); } });
+    nextBtn.addEventListener('click', e => { e.stopPropagation(); if (viewM < 11) { viewM++; renderGrid(); } });
+
+    const api = {
+      getDate() { return new Date(selDate); },
+      setDate(d) { selDate = new Date(d); selDate.setSeconds(0,0); updateBtn(); },
+      close: closePanel
+    };
+    updateBtn();
+    allDateBtns.push(api);
+    return api;
+  }
+
+  document.addEventListener('click', () => allDateBtns.forEach(b => b.close()));
+
+  // ── Category chips ────────────────────────────────────────────
+  let activeCatId = null;
+  let chipEditMode = false;
+  let newCatColor = PALETTE[0];
+
+  function renderChips() {
+    const scroll = document.getElementById('fChipScroll');
+    scroll.innerHTML = '';
+    const cats = getAllCats();
+    if (!cats.length) return;
+
+    cats.forEach(cat => {
+      const chip = document.createElement('button');
+      chip.type = 'button'; chip.className = 'f-cat-chip';
+      chip.dataset.catId = cat.id;
+
+      if (chipEditMode) {
+        chip.className += ' edit-mode';
+      }
+
+      const isActive = cat.id === activeCatId;
+      if (isActive) {
+        chip.classList.add('active');
+        chip.style.background = hexToRgba(cat.color, 0.18);
+        chip.style.borderColor = hexToRgba(cat.color, 0.45);
+        chip.style.color = cat.color;
+      }
+
+      chip.textContent = cat.name;
+
+      // Delete button (shown in edit mode)
+      if (!cat.builtin || cats.length > 1) {
+        const del = document.createElement('button');
+        del.className = 'chip-del'; del.textContent = '×'; del.type = 'button';
+        if (chipEditMode) del.style.display = 'flex';
+        del.addEventListener('click', e => {
+          e.stopPropagation();
+          const remaining = getCats().filter(c => c.id !== cat.id);
+          saveCats(remaining.length ? remaining : [DEFAULT_CAT]);
+          if (activeCatId === cat.id) activeCatId = getCats()[0]?.id || DEFAULT_CAT.id;
+          renderChips(); refreshManCatSelect(); drawCharts();
+        });
+        chip.appendChild(del);
+      }
+
+      chip.addEventListener('click', () => {
+        if (chipEditMode) return;
+        activeCatId = cat.id; renderChips();
+      });
+
+      // Long-press to enter edit mode
+      let lpt = null;
+      chip.addEventListener('pointerdown', () => {
+        lpt = setTimeout(() => { chipEditMode = true; document.getElementById('fChipEditBtn').textContent = 'Done'; renderChips(); }, 600);
+      });
+      chip.addEventListener('pointerup',     () => { clearTimeout(lpt); });
+      chip.addEventListener('pointercancel', () => { clearTimeout(lpt); });
+      chip.addEventListener('pointermove',   () => { clearTimeout(lpt); });
+
+      scroll.appendChild(chip);
+    });
+
+    document.getElementById('fChipEditBtn').textContent = chipEditMode ? 'Done' : 'Edit';
+  }
+
+  document.getElementById('fChipEditBtn').addEventListener('click', () => {
+    chipEditMode = !chipEditMode;
+    renderChips();
+  });
+
+  // New category form
+  document.getElementById('fChipAdd').addEventListener('click', () => {
+    const form = document.getElementById('fNewCatForm');
+    form.style.display = form.style.display === 'none' ? '' : 'none';
+    if (form.style.display !== 'none') {
+      buildSwatchPicker('fNewCatSwatches', c => { newCatColor = c; });
+      document.getElementById('fNewCatName').focus();
+    }
+  });
+
+  function buildSwatchPicker(wrapId, setColor) {
+    const wrap = document.getElementById(wrapId); wrap.innerHTML = '';
+    PALETTE.forEach(c => {
+      const s = document.createElement('div'); s.className = 'f-swatch' + (c === newCatColor ? ' sel' : '');
+      s.style.background = c; s.dataset.c = c;
+      s.addEventListener('click', () => {
+        setColor(c); newCatColor = c;
+        wrap.querySelectorAll('.f-swatch').forEach(x => x.classList.toggle('sel', x.dataset.c === c));
+      });
+      wrap.appendChild(s);
+    });
+  }
+
+  document.getElementById('fNewCatSave').addEventListener('click', () => {
+    const nameEl = document.getElementById('fNewCatName');
+    const name = nameEl.value.trim(); if (!name) { nameEl.focus(); return; }
+    const cats = getCats();
+    const id = 'cat_' + Date.now();
+    cats.push({ id, name, color: newCatColor });
+    saveCats(cats);
+    nameEl.value = '';
+    document.getElementById('fNewCatForm').style.display = 'none';
+    if (!activeCatId) activeCatId = id;
+    renderChips(); refreshManCatSelect(); drawCharts();
+  });
+
+  document.getElementById('fNewCatName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('fNewCatSave').click(); }
+    if (e.key === 'Escape') document.getElementById('fNewCatForm').style.display = 'none';
+  });
+
+  function refreshManCatSelect() {
+    const sel = document.getElementById('fManCatSelect');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— Category —</option>';
+    getAllCats().forEach(cat => {
+      const o = document.createElement('option'); o.value = cat.id; o.textContent = cat.name;
+      sel.appendChild(o);
+    });
+    if (cur) sel.value = cur;
+  }
+
+  // Manual log inline add-category (icon btn)
+  document.getElementById('fManAddCatBtn').addEventListener('click', () => {
+    document.getElementById('fChipAdd').click();
+    // Scroll to it
+    document.getElementById('fNewCatForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
   // ── Timer state ───────────────────────────────────────────────
-  let mode      = 'pomodoro';
-  let running   = false;
-  let pomoWork  = 25, pomoBreak = 5;
+  let mode = 'pomodoro', running = false;
+  let pomoWork = 25, pomoBreak = 5;
   let pomoPhase = 'work', pomoRound = 1;
-  let timerTotal = 25 * 60;
-  let timerLeft  = 25 * 60;
-  let startedAt  = 0;
-  let pausedMs   = 0;
-  let swLaps     = [];
-  let ticker     = null;
-  let pendingSession = null;
+  let timerTotal = 25 * 60, timerLeft = 25 * 60;
+  let startedAt = 0, pausedMs = 0;
+  let swLaps = [], ticker = null;
 
   const displayEl = document.getElementById('fDisplay');
   const phaseEl   = document.getElementById('fPhase');
@@ -488,18 +943,8 @@ canvas { display: block; width: 100%; }
   const lapListEl = document.getElementById('fLapList');
   const cycleOpts = document.getElementById('fCycleOpts');
   const cdRow     = document.getElementById('fCdRow');
+  const savedNotice = document.getElementById('fSavedNotice');
 
-  // ── Format helpers ────────────────────────────────────────────
-  function pad(n) { return String(Math.floor(n)).padStart(2, '0'); }
-  function fmtS(s) {
-    s = Math.max(0, Math.round(s));
-    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
-    return h > 0 ? h + ':' + pad(m) + ':' + pad(ss) : pad(m) + ':' + pad(ss);
-  }
-  function fmtMs(ms) { return fmtS(ms / 1000); }
-  function durStr(s) { return s >= 3600 ? (s / 3600).toFixed(1) + 'h' : Math.round(s / 60) + 'm'; }
-
-  // ── Timer core ────────────────────────────────────────────────
   function elapsedMs() { return pausedMs + (running ? Date.now() - startedAt : 0); }
 
   function renderDisplay() {
@@ -508,11 +953,10 @@ canvas { display: block; width: 100%; }
       phaseEl.textContent   = running ? 'Counting up…' : (pausedMs > 0 ? 'Paused' : '');
     } else {
       displayEl.textContent = fmtS(timerLeft);
-      if (mode === 'pomodoro') {
+      if (mode === 'pomodoro')
         phaseEl.textContent = (pomoPhase === 'work' ? 'Work' : 'Break') + ' · Round ' + pomoRound;
-      } else {
+      else
         phaseEl.textContent = running ? 'Counting down…' : (timerLeft > 0 && timerLeft < timerTotal ? 'Paused' : '');
-      }
     }
     startBtn.textContent = running ? '⏸ Pause' : '▶ Start';
   }
@@ -526,27 +970,26 @@ canvas { display: block; width: 100%; }
 
   function onComplete() {
     const worked = timerTotal;
-    doPause();
-    playChime();
-    pendingSession = { durationSeconds: Math.round(worked), at: new Date().toISOString() };
-    renderPending();
+    doPause(); playChime();
+
+    // Auto-save to selected category
+    const cats = getAllCats();
+    const cat = cats.find(c => c.id === activeCatId) || cats[0];
+    if (cat) {
+      const sess = getSess();
+      sess.push({ id: 'sess_' + Date.now(), categoryId: cat.id, durationSeconds: Math.round(worked), at: new Date().toISOString() });
+      saveSess(sess);
+      savedNotice.textContent = '✓ Saved ' + fmtS(worked) + ' to ' + cat.name;
+      setTimeout(() => { savedNotice.textContent = ''; }, 3000);
+      drawCharts();
+    }
+
     if (mode === 'pomodoro') {
       if (pomoPhase === 'work') { pomoPhase = 'break'; timerTotal = pomoBreak * 60; }
       else { pomoPhase = 'work'; pomoRound++; timerTotal = pomoWork * 60; }
-      timerLeft = timerTotal; pausedMs = 0;
-      renderDisplay();
+      timerLeft = timerTotal; pausedMs = 0; renderDisplay();
     } else {
       phaseEl.textContent = 'Done!';
-    }
-  }
-
-  function renderPending() {
-    const el = document.getElementById('fPending');
-    if (pendingSession) {
-      el.innerHTML = '<span class="f-pending-dur">' + fmtS(pendingSession.durationSeconds) + '</span>'
-        + '<span class="f-pending-hint">Session complete — pick a category below to save it.</span>';
-    } else {
-      el.innerHTML = '<span class="f-pending-hint">Complete a timer session, then pick a category below to save it instantly.</span>';
     }
   }
 
@@ -556,60 +999,47 @@ canvas { display: block; width: 100%; }
       const h = parseInt(document.getElementById('cdH').value) || 0;
       const m = parseInt(document.getElementById('cdM').value) || 0;
       const s = parseInt(document.getElementById('cdS').value) || 0;
-      timerTotal = h * 3600 + m * 60 + s;
-      timerLeft  = timerTotal; pausedMs = 0;
+      timerTotal = h * 3600 + m * 60 + s; timerLeft = timerTotal; pausedMs = 0;
       if (timerTotal === 0) return;
     }
     running = true; startedAt = Date.now();
-    ticker = setInterval(tick, 200);
-    renderDisplay();
+    ticker = setInterval(tick, 200); renderDisplay();
   }
 
   function doPause() {
     if (!running) return;
     clearInterval(ticker); ticker = null;
-    running = false; pausedMs = elapsedMs();
-    renderDisplay();
+    running = false; pausedMs = elapsedMs(); renderDisplay();
   }
 
   function doReset() {
     clearInterval(ticker); ticker = null;
     running = false; pausedMs = 0; swLaps = []; lapListEl.innerHTML = '';
     if (mode === 'pomodoro') {
-      pomoPhase = 'work'; pomoRound = 1;
-      timerTotal = pomoWork * 60; timerLeft = timerTotal;
+      pomoPhase = 'work'; pomoRound = 1; timerTotal = pomoWork * 60; timerLeft = timerTotal;
     } else if (mode === 'countdown') {
       const h = parseInt(document.getElementById('cdH').value) || 0;
       const m = parseInt(document.getElementById('cdM').value) || 0;
       const s = parseInt(document.getElementById('cdS').value) || 0;
       timerTotal = h * 3600 + m * 60 + s; timerLeft = timerTotal;
-    } else {
-      timerTotal = 0; timerLeft = 0;
-    }
+    } else { timerTotal = 0; timerLeft = 0; }
     renderDisplay();
   }
 
   startBtn.addEventListener('click', () => { if (running) doPause(); else doStart(); });
   resetBtn.addEventListener('click', doReset);
   lapBtn.addEventListener('click', () => {
-    const now = elapsedMs();
-    const prev = swLaps.length ? swLaps[swLaps.length - 1].total : 0;
+    const now = elapsedMs(), prev = swLaps.length ? swLaps[swLaps.length-1].total : 0;
     swLaps.push({ total: now, lap: now - prev });
-    renderLaps();
-  });
-
-  function renderLaps() {
     lapListEl.innerHTML = '';
     [...swLaps].reverse().forEach((l, ri) => {
-      const n = swLaps.length - ri;
       const li = document.createElement('li');
       li.className = 'f-lap-item' + (ri === 0 ? ' latest' : '');
-      li.innerHTML = '<span>Lap ' + n + '</span><span>' + fmtMs(l.lap) + '</span>';
+      li.innerHTML = '<span>Lap ' + (swLaps.length - ri) + '</span><span>' + fmtMs(l.lap) + '</span>';
       lapListEl.appendChild(li);
     });
-  }
+  });
 
-  // ── Mode switching ────────────────────────────────────────────
   function setMode(m) {
     mode = m;
     document.querySelectorAll('.f-mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
@@ -627,324 +1057,36 @@ canvas { display: block; width: 100%; }
       cycleOpts.querySelectorAll('.f-cycle-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const parts = btn.dataset.cycle.split('-').map(Number);
-      pomoWork = parts[0]; pomoBreak = parts[1];
-      doReset();
+      pomoWork = parts[0]; pomoBreak = parts[1]; doReset();
     });
   });
 
-  ['cdH', 'cdM', 'cdS'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => { if (!running) doReset(); });
-  });
+  ['cdH','cdM','cdS'].forEach(id =>
+    document.getElementById(id).addEventListener('change', () => { if (!running) doReset(); }));
 
-  // ── Categories ────────────────────────────────────────────────
-  let pickedColor    = PALETTE[0];
-  let manPickedColor = PALETTE[0];
-
-  function buildSwatches(wrapId, colorRef, setColor) {
-    const wrap = document.getElementById(wrapId);
-    wrap.innerHTML = '';
-    PALETTE.forEach(c => {
-      const el = document.createElement('div');
-      el.className = 'f-swatch' + (c === colorRef ? ' sel' : '');
-      el.style.background = c; el.dataset.c = c;
-      el.addEventListener('click', () => {
-        setColor(c);
-        wrap.querySelectorAll('.f-swatch').forEach(s => s.classList.toggle('sel', s.dataset.c === c));
-      });
-      wrap.appendChild(el);
-    });
-  }
-
-  function refreshCatSelects() {
-    ['fCatSelect', 'fManCatSelect'].forEach(id => {
-      const sel = document.getElementById(id);
-      const cur = sel.value;
-      sel.innerHTML = '<option value="">— Pick a category —</option>';
-      getCats().forEach(cat => {
-        const o = document.createElement('option');
-        o.value = cat.id; o.textContent = cat.name;
-        sel.appendChild(o);
-      });
-      if (cur) sel.value = cur;
-    });
-  }
-
-  // Timer log — new category
-  const catForm    = document.getElementById('fCatForm');
-  const catNewBtn  = document.getElementById('fCatNewBtn');
-  const catNameEl  = document.getElementById('fCatName');
-  const saveCatBtn = document.getElementById('fSaveCatBtn');
-
-  catNewBtn.addEventListener('click', () => {
-    const open = catForm.style.display !== 'none';
-    catForm.style.display = open ? 'none' : '';
-    catNewBtn.classList.toggle('open', !open);
-    if (!open) { buildSwatches('fSwatches', pickedColor, c => { pickedColor = c; }); catNameEl.focus(); }
-  });
-
-  function saveCategory(nameEl, formEl, newBtn, getColor) {
-    const name = nameEl.value.trim();
-    if (!name) { nameEl.focus(); return; }
-    const cats = getCats();
-    const id = 'cat_' + Date.now();
-    cats.push({ id, name, color: getColor() });
-    saveCats(cats);
-    formEl.style.display = 'none'; newBtn.classList.remove('open');
-    nameEl.value = '';
-    refreshCatSelects();
-    drawCharts();
-    return id;
-  }
-
-  saveCatBtn.addEventListener('click', () => {
-    const id = saveCategory(catNameEl, catForm, catNewBtn, () => pickedColor);
-    if (id) document.getElementById('fCatSelect').value = id;
-  });
-  catNameEl.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); saveCatBtn.click(); }
-    if (e.key === 'Escape') { catForm.style.display = 'none'; catNewBtn.classList.remove('open'); }
-  });
-
-  // Manual log — new category
-  const manCatForm    = document.getElementById('fManCatForm');
-  const manCatNewBtn  = document.getElementById('fManCatNewBtn');
-  const manCatNameEl  = document.getElementById('fManCatName');
-  const manSaveCatBtn = document.getElementById('fManSaveCatBtn');
-
-  manCatNewBtn.addEventListener('click', () => {
-    const open = manCatForm.style.display !== 'none';
-    manCatForm.style.display = open ? 'none' : '';
-    manCatNewBtn.classList.toggle('open', !open);
-    if (!open) { buildSwatches('fManSwatches', manPickedColor, c => { manPickedColor = c; }); manCatNameEl.focus(); }
-  });
-
-  manSaveCatBtn.addEventListener('click', () => {
-    const id = saveCategory(manCatNameEl, manCatForm, manCatNewBtn, () => manPickedColor);
-    if (id) document.getElementById('fManCatSelect').value = id;
-  });
-  manCatNameEl.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); manSaveCatBtn.click(); }
-    if (e.key === 'Escape') { manCatForm.style.display = 'none'; manCatNewBtn.classList.remove('open'); }
-  });
-
-  // ── Auto-log on category select (timer flow) ──────────────────
-  document.getElementById('fCatSelect').addEventListener('change', () => {
-    const catId = document.getElementById('fCatSelect').value;
-    if (!catId || !pendingSession) return;
-    const sess = getSess();
-    sess.push({ id: 'sess_' + Date.now(), categoryId: catId,
-      durationSeconds: pendingSession.durationSeconds, at: pendingSession.at });
-    saveSess(sess);
-    const catName = (getCats().find(c => c.id === catId) || {}).name || 'category';
-    const okEl = document.getElementById('fLogOk');
-    okEl.textContent = '✓ Saved ' + fmtS(pendingSession.durationSeconds) + ' to ' + catName;
-    pendingSession = null; renderPending(); drawCharts();
-    setTimeout(() => { okEl.textContent = ''; }, 2500);
-  });
-
-  // ── Apple-style calendar picker factory ───────────────────────
-  const MONTH_NAMES  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const WEEK_DAYS    = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-  const THIS_YEAR    = new Date().getFullYear();
-
-  // Track all open panels so we can close others
-  const allPickers = [];
-
-  function makeCalPicker(containerEl, labelText, initDate, onChange) {
-    let sel  = new Date(initDate); sel.setSeconds(0, 0);
-    let viewM = sel.getMonth();
-
-    const todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
-
-    // ── Build DOM ──
-    const field = document.createElement('div');
-    field.className = 'mc-field';
-
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'mc-btn';
-    btn.innerHTML =
-      '<div class="mc-btn-inner">' +
-        '<div class="mc-btn-label">' + labelText + '</div>' +
-        '<div class="mc-btn-val"></div>' +
-      '</div>' +
-      '<span class="mc-btn-chevron">▾</span>';
-    const btnVal = btn.querySelector('.mc-btn-val');
-
-    const panel = document.createElement('div');
-    panel.className = 'mc-panel';
-    panel.style.display = 'none';
-
-    // Header
-    const hdr = document.createElement('div'); hdr.className = 'mc-hdr';
-    const prevBtn   = document.createElement('button'); prevBtn.type='button'; prevBtn.className='mc-nav-btn'; prevBtn.textContent='‹';
-    const monthName = document.createElement('div');   monthName.className='mc-month-name';
-    const nextBtn   = document.createElement('button'); nextBtn.type='button'; nextBtn.className='mc-nav-btn'; nextBtn.textContent='›';
-    hdr.append(prevBtn, monthName, nextBtn);
-
-    // Weekday labels
-    const wdRow = document.createElement('div'); wdRow.className = 'mc-weekdays';
-    WEEK_DAYS.forEach(d => { const s = document.createElement('div'); s.className='mc-wd'; s.textContent=d; wdRow.appendChild(s); });
-
-    // Days grid
-    const daysGrid = document.createElement('div'); daysGrid.className = 'mc-days';
-
-    // Time row
-    const timeRow = document.createElement('div'); timeRow.className = 'mc-time-row';
-
-    const hCell = document.createElement('div'); hCell.className = 'mc-time-cell';
-    const hInput = document.createElement('input'); hInput.type='number'; hInput.className='mc-time-num'; hInput.min=0; hInput.max=23; hInput.value=pad(sel.getHours());
-    const hUnit  = document.createElement('div');  hUnit.className='mc-time-unit'; hUnit.textContent='hr';
-    hCell.append(hInput, hUnit);
-
-    const sep = document.createElement('div'); sep.className='mc-time-sep'; sep.textContent=':';
-
-    const mCell = document.createElement('div'); mCell.className = 'mc-time-cell';
-    const mInput = document.createElement('input'); mInput.type='number'; mInput.className='mc-time-num'; mInput.min=0; mInput.max=59; mInput.value=pad(sel.getMinutes());
-    const mUnit  = document.createElement('div');  mUnit.className='mc-time-unit'; mUnit.textContent='min';
-    mCell.append(mInput, mUnit);
-
-    timeRow.append(hCell, sep, mCell);
-    panel.append(hdr, wdRow, daysGrid, timeRow);
-    field.append(btn, panel);
-    containerEl.appendChild(field);
-
-    // ── Helpers ──
-    function daysInMonth(m) { return new Date(THIS_YEAR, m + 1, 0).getDate(); }
-
-    function getDate() {
-      const h = Math.min(23, Math.max(0, parseInt(hInput.value) || 0));
-      const m = Math.min(59, Math.max(0, parseInt(mInput.value) || 0));
-      return new Date(THIS_YEAR, sel.getMonth(), sel.getDate(), h, m, 0, 0);
-    }
-
-    function fmtBtn(d) {
-      const h = d.getHours(), m = d.getMinutes();
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      const h12  = h % 12 || 12;
-      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      return days[d.getDay()] + ', ' + SHORT_MONTHS[d.getMonth()] + ' ' + d.getDate()
-        + '  ·  ' + h12 + ':' + pad(m) + ' ' + ampm;
-    }
-
-    function updateBtn() { btnVal.textContent = fmtBtn(getDate()); }
-
-    function renderGrid() {
-      daysGrid.innerHTML = '';
-      prevBtn.disabled = viewM === 0;
-      nextBtn.disabled = viewM === 11;
-      monthName.textContent = MONTH_NAMES[viewM] + ' ' + THIS_YEAR;
-
-      const firstDay  = new Date(THIS_YEAR, viewM, 1).getDay();
-      const daysCount = daysInMonth(viewM);
-      const prevCount = viewM > 0 ? daysInMonth(viewM - 1) : 0;
-
-      // Leading overflow from previous month
-      for (let i = 0; i < firstDay; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'mc-day mc-other';
-        if (viewM > 0) cell.textContent = prevCount - firstDay + 1 + i;
-        daysGrid.appendChild(cell);
-      }
-
-      // Current month
-      const selM = sel.getMonth(), selD = sel.getDate();
-      for (let d = 1; d <= daysCount; d++) {
-        const cell = document.createElement('div'); cell.className = 'mc-day';
-        cell.textContent = d;
-        const cellDate = new Date(THIS_YEAR, viewM, d); cellDate.setHours(0,0,0,0);
-        if (+cellDate === +todayMidnight) cell.classList.add('today');
-        if (viewM === selM && d === selD) cell.classList.add('sel');
-        cell.addEventListener('click', () => {
-          sel = new Date(THIS_YEAR, viewM, d, parseInt(hInput.value)||0, parseInt(mInput.value)||0, 0, 0);
-          renderGrid(); updateBtn(); onChange(getDate());
-        });
-        daysGrid.appendChild(cell);
-      }
-
-      // Trailing overflow to next month (fill to 42 cells)
-      const trailing = 42 - (firstDay + daysCount);
-      for (let i = 1; i <= trailing; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'mc-day mc-other';
-        if (viewM < 11) cell.textContent = i;
-        daysGrid.appendChild(cell);
-      }
-    }
-
-    function open()  { panel.style.display = ''; btn.classList.add('open'); viewM = sel.getMonth(); renderGrid(); }
-    function close() { panel.style.display = 'none'; btn.classList.remove('open'); }
-    function toggle() { panel.style.display === 'none' ? open() : close(); }
-
-    // ── Events ──
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      // Close sibling pickers
-      allPickers.forEach(p => { if (p !== api) p.close(); });
-      toggle();
-    });
-
-    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); if (viewM > 0) { viewM--; renderGrid(); } });
-    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); if (viewM < 11) { viewM++; renderGrid(); } });
-
-    [hInput, mInput].forEach(inp => {
-      const max = inp === hInput ? 23 : 59;
-      inp.addEventListener('change', () => {
-        let v = parseInt(inp.value);
-        if (isNaN(v)) v = 0;
-        inp.value = pad(Math.min(max, Math.max(0, v)));
-        updateBtn(); onChange(getDate());
-      });
-      inp.addEventListener('wheel', (e) => {
-        e.preventDefault(); e.stopPropagation();
-        let v = parseInt(inp.value) + (e.deltaY < 0 ? 1 : -1);
-        inp.value = pad(Math.min(max, Math.max(0, v)));
-        updateBtn(); onChange(getDate());
-      }, { passive: false });
-      inp.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-          e.preventDefault();
-          let v = parseInt(inp.value) + (e.key === 'ArrowUp' ? 1 : -1);
-          inp.value = pad(Math.min(max, Math.max(0, v)));
-          updateBtn(); onChange(getDate());
-        }
-      });
-    });
-
-    // ── API ──
-    const api = {
-      getDate,
-      setDate(d) {
-        sel = new Date(d); sel.setSeconds(0, 0);
-        viewM = sel.getMonth();
-        hInput.value = pad(sel.getHours());
-        mInput.value = pad(sel.getMinutes());
-        updateBtn();
-      },
-      close
-    };
-
-    updateBtn();
-    allPickers.push(api);
-    return api;
-  }
-
-  // Close all pickers on outside click
-  document.addEventListener('click', () => { allPickers.forEach(p => p.close()); });
-
-  // ── Manual past-session log ───────────────────────────────────
-  const now0      = new Date();
+  // ── Manual Log pickers ────────────────────────────────────────
+  const now0 = new Date();
   const startInit = new Date(now0.getTime() - 3600000);
 
-  const manStartPicker = makeCalPicker(document.getElementById('manStartWrap'), 'Started', startInit, updateManDur);
-  const manEndPicker   = makeCalPicker(document.getElementById('manEndWrap'),   'Stopped', now0,      updateManDur);
+  const manStartBtn  = makeDateBtn(document.getElementById('manStartDateWrap'), 'Date',  startInit, d => { updateManDur(); });
+  const manEndBtn    = makeDateBtn(document.getElementById('manEndDateWrap'),   'Date',  now0,      d => { updateManDur(); });
+  const manStartTime = makeTimeDrums(document.getElementById('manStartDrums'),  startInit, updateManDur);
+  const manEndTime   = makeTimeDrums(document.getElementById('manEndDrums'),    now0,      updateManDur);
+
+  function getManStart() {
+    const d = new Date(manStartBtn.getDate());
+    return manStartTime.getDate(d);
+  }
+  function getManEnd() {
+    const d = new Date(manEndBtn.getDate());
+    return manEndTime.getDate(d);
+  }
 
   function updateManDur() {
-    const s = manStartPicker.getDate(), e = manEndPicker.getDate();
+    const s = getManStart(), e = getManEnd();
     const el = document.getElementById('fManDur');
     if (e > s) {
-      el.textContent = fmtS(Math.round((e - s) / 1000));
-      el.classList.remove('empty');
+      el.textContent = fmtS(Math.round((e - s) / 1000)); el.classList.remove('empty');
     } else {
       el.textContent = '—'; el.classList.add('empty');
     }
@@ -954,7 +1096,7 @@ canvas { display: block; width: 100%; }
     const errEl = document.getElementById('fManErr');
     const catId = document.getElementById('fManCatSelect').value;
     if (!catId) { errEl.textContent = 'Pick a category first.'; return; }
-    const s = manStartPicker.getDate(), e = manEndPicker.getDate();
+    const s = getManStart(), e = getManEnd();
     if (e <= s) { errEl.textContent = 'Stop time must be after start time.'; return; }
     errEl.textContent = '';
     const dur = Math.round((e - s) / 1000);
@@ -963,15 +1105,20 @@ canvas { display: block; width: 100%; }
     saveSess(sess); drawCharts();
     const btn = document.getElementById('fManLogBtn');
     btn.textContent = '✓ Saved';
-    setTimeout(() => { btn.textContent = 'Save Past Session'; }, 1400);
+    setTimeout(() => { btn.textContent = 'Save Past Session'; }, 1500);
+
+    // Reset to now/1h ago
     const newNow = new Date();
-    manStartPicker.setDate(new Date(newNow.getTime() - 3600000));
-    manEndPicker.setDate(newNow);
+    const newStart = new Date(newNow.getTime() - 3600000);
+    manStartBtn.setDate(newStart); manStartTime.setTime(newStart);
+    manEndBtn.setDate(newNow);     manEndTime.setTime(newNow);
     updateManDur();
   });
 
-  // ── Period / Analytics ────────────────────────────────────────
+  // ── Analytics ─────────────────────────────────────────────────
   let period = 'today';
+  let donutAnimId = null;
+  let lineLabels = [], lineSeries = [], lineXs = [];
 
   document.getElementById('fPeriodTabs').querySelectorAll('.f-period-tab').forEach(t => {
     t.addEventListener('click', () => {
@@ -979,6 +1126,79 @@ canvas { display: block; width: 100%; }
       t.classList.add('active'); period = t.dataset.period; drawCharts();
     });
   });
+
+  function aggregateFlat(p) {
+    const cats = getAllCats(), sess = getSess();
+    const since = periodCutoff(p);
+    const byId = {};
+    sess.forEach(s => {
+      if (new Date(s.at).getTime() < since) return;
+      byId[s.categoryId] = (byId[s.categoryId] || 0) + s.durationSeconds;
+    });
+    return cats.map(c => ({ ...c, secs: byId[c.id] || 0 })).filter(c => c.secs > 0);
+  }
+
+  function aggregateByBucket(p) {
+    const cats = getAllCats(), sess = getSess();
+    const now = new Date();
+    const TODAY = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let numBuckets, labels, getBucket;
+
+    if (p === 'today') {
+      numBuckets = 24;
+      labels = Array.from({length:24}, (_, i) => {
+        if (i === 0) return '12a'; if (i === 12) return '12p';
+        return i < 12 ? i + 'a' : (i-12) + 'p';
+      });
+      getBucket = at => {
+        const d = new Date(at);
+        if (d < TODAY || d >= new Date(TODAY.getTime() + 86400000)) return -1;
+        return d.getHours();
+      };
+    } else if (p === '7d') {
+      numBuckets = 7;
+      const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      labels = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(TODAY.getTime() - i * 86400000);
+        labels.push(dayNames[d.getDay()]);
+      }
+      getBucket = at => {
+        const d = new Date(at);
+        const ago = Math.floor((TODAY.getTime() - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) / 86400000);
+        if (ago < 0 || ago >= 7) return -1;
+        return 6 - ago;
+      };
+    } else if (p === 'month') {
+      numBuckets = 5;
+      labels = ['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5'];
+      const ms = new Date(now.getFullYear(), now.getMonth(), 1);
+      getBucket = at => {
+        const d = new Date(at);
+        if (d < ms || d.getMonth() !== now.getMonth()) return -1;
+        return Math.min(4, Math.floor((d.getDate()-1) / 7));
+      };
+    } else {
+      numBuckets = 12;
+      labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      getBucket = at => {
+        const d = new Date(at);
+        if (d.getFullYear() !== now.getFullYear()) return -1;
+        return d.getMonth();
+      };
+    }
+
+    const series = cats.map(cat => {
+      const buckets = Array(numBuckets).fill(0);
+      sess.forEach(s => {
+        if (s.categoryId !== cat.id) return;
+        const b = getBucket(s.at); if (b >= 0) buckets[b] += s.durationSeconds;
+      });
+      return { cat, buckets };
+    }).filter(s => s.buckets.some(v => v > 0));
+
+    return { labels, series, numBuckets };
+  }
 
   function periodCutoff(p) {
     const n = new Date();
@@ -988,113 +1208,207 @@ canvas { display: block; width: 100%; }
     return new Date(n.getFullYear(), 0, 1).getTime();
   }
 
-  function aggregate(p) {
-    const cats = getCats(), sess = getSess(), since = periodCutoff(p);
-    const byId = {};
-    sess.forEach(s => {
-      if (new Date(s.at).getTime() < since) return;
-      byId[s.categoryId] = (byId[s.categoryId] || 0) + s.durationSeconds;
-    });
-    return cats.map(c => ({ ...c, secs: byId[c.id] || 0 })).filter(c => c.secs > 0);
-  }
+  // ── Line graph ────────────────────────────────────────────────
+  function drawLine() {
+    const { labels, series, numBuckets } = aggregateByBucket(period);
+    lineLabels = labels; lineSeries = series;
 
-  // ── Charts ────────────────────────────────────────────────────
-  function setupCanvas(id, H) {
-    const canvas = document.getElementById(id);
-    const W = (canvas.parentElement.clientWidth || 160) - 20;
-    const dpr = window.devicePixelRatio || 1;
+    const canvas = document.getElementById('fLineCanvas');
+    const W = canvas.parentElement.clientWidth || 340;
+    const H = 160, dpr = window.devicePixelRatio || 1;
     canvas.width = W * dpr; canvas.height = H * dpr;
-    canvas.style.height = H + 'px';
+    canvas.style.width = '100%'; canvas.style.height = H + 'px';
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr); ctx.clearRect(0, 0, W, H);
-    return { ctx, W, H };
-  }
 
-  function drawBar(data) {
-    const { ctx, W, H } = setupCanvas('fBarCanvas', 148);
-    if (!data.length) {
-      ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '11px sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('No data yet', W / 2, H / 2); return;
-    }
-    const pL = 4, pR = 4, pT = 18, pB = 26;
+    const pL = 6, pR = 6, pT = 14, pB = 24;
     const aW = W - pL - pR, aH = H - pT - pB;
-    const n = data.length, gap = Math.min(8, aW / n * 0.2);
-    const bW = (aW - gap * (n - 1)) / n;
-    const maxS = Math.max(...data.map(d => d.secs));
-    data.forEach((d, i) => {
-      const bH = maxS > 0 ? (d.secs / maxS) * aH : 0;
-      const x = pL + i * (bW + gap), y = pT + aH - bH;
-      const r = Math.min(4, bW / 2, Math.max(0, bH));
-      ctx.fillStyle = d.color; ctx.beginPath();
-      if (bH >= r * 2) {
-        ctx.moveTo(x + r, y); ctx.lineTo(x + bW - r, y);
-        ctx.arcTo(x + bW, y, x + bW, y + r, r);
-        ctx.lineTo(x + bW, y + bH); ctx.lineTo(x, y + bH);
-        ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
-      } else { ctx.rect(x, y, bW, Math.max(2, bH)); }
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(d.name.length > 5 ? d.name.slice(0, 4) + '…' : d.name, x + bW / 2, H - pB + 10);
-      if (bH > 4) {
-        ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '8px sans-serif';
-        ctx.fillText(durStr(d.secs), x + bW / 2, y - 3);
-      }
-    });
-  }
 
-  function drawDonut(data) {
-    const { ctx, W, H } = setupCanvas('fDonutCanvas', 148);
-    const cx = W / 2, cy = H / 2;
-    const outer = Math.min(cx, cy) - 6, inner = outer * 0.56;
-    const mid = (outer + inner) / 2, lw = outer - inner;
-    if (!data.length) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = lw;
-      ctx.beginPath(); ctx.arc(cx, cy, mid, 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '11px sans-serif';
+    // Gridlines
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
+    [0.25, 0.5, 0.75, 1].forEach(f => {
+      const y = pT + aH * (1 - f);
+      ctx.beginPath(); ctx.moveTo(pL, y); ctx.lineTo(W - pR, y); ctx.stroke();
+    });
+
+    if (!series.length) {
+      ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.font = '11px sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('No data', cx, cy); return;
+      ctx.fillText('No data yet', W / 2, pT + aH / 2); return;
     }
-    const total = data.reduce((s, d) => s + d.secs, 0);
-    const GAP = data.length > 1 ? 0.035 : 0;
-    let a = -Math.PI / 2; ctx.lineWidth = lw;
-    data.forEach(d => {
-      const sweep = (d.secs / total) * Math.PI * 2 - GAP;
-      if (sweep > 0) {
-        ctx.strokeStyle = d.color;
-        ctx.beginPath(); ctx.arc(cx, cy, mid, a + GAP / 2, a + GAP / 2 + sweep); ctx.stroke();
+
+    const maxV = Math.max(...series.flatMap(s => s.buckets), 1);
+    const xs = numBuckets === 1
+      ? [pL + aW / 2]
+      : labels.map((_, i) => pL + (i / (numBuckets - 1)) * aW);
+    lineXs = xs;
+
+    const getY = v => pT + aH * (1 - v / maxV);
+
+    series.forEach(({ cat, buckets }) => {
+      const pts = xs.map((x, i) => ({ x, y: getY(buckets[i]) }));
+
+      // Gradient fill
+      const grad = ctx.createLinearGradient(0, pT, 0, pT + aH);
+      grad.addColorStop(0, hexToRgba(cat.color, 0.28));
+      grad.addColorStop(1, hexToRgba(cat.color, 0));
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 0; i < pts.length - 1; i++) {
+        const cpx = (pts[i].x + pts[i+1].x) / 2;
+        ctx.bezierCurveTo(cpx, pts[i].y, cpx, pts[i+1].y, pts[i+1].x, pts[i+1].y);
       }
-      a += (d.secs / total) * Math.PI * 2;
+      ctx.lineTo(pts[pts.length-1].x, pT + aH);
+      ctx.lineTo(pts[0].x, pT + aH);
+      ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+
+      // Line
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 0; i < pts.length - 1; i++) {
+        const cpx = (pts[i].x + pts[i+1].x) / 2;
+        ctx.bezierCurveTo(cpx, pts[i].y, cpx, pts[i+1].y, pts[i+1].x, pts[i+1].y);
+      }
+      ctx.strokeStyle = cat.color; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+
+      // Dots
+      pts.forEach((p, i) => {
+        if (buckets[i] > 0) {
+          ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = cat.color; ctx.fill();
+          ctx.strokeStyle = 'rgba(5,5,6,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+      });
     });
-    ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(durStr(total), cx, cy - 7);
-    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '9px sans-serif';
-    ctx.fillText('total', cx, cy + 8);
+
+    // X-axis labels
+    const step = numBuckets > 12 ? 4 : numBuckets > 7 ? 3 : 1;
+    ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
+    labels.forEach((lbl, i) => {
+      if (i % step === 0 || i === numBuckets - 1) ctx.fillText(lbl, xs[i], H - 10);
+    });
+
+    setupLineTooltip(canvas, getY, maxV);
   }
 
+  // Tooltip logic for line graph
+  function setupLineTooltip(canvas, getY, maxV) {
+    const tooltip = document.getElementById('fTooltip');
+
+    function handleMove(clientX, clientY) {
+      if (!lineXs.length) return;
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = clientX - rect.left;
+      let bestI = 0, bestDist = Infinity;
+      lineXs.forEach((x, i) => { const d = Math.abs(x - mouseX); if (d < bestDist) { bestDist = d; bestI = i; } });
+      if (bestDist > 32) { tooltip.style.display = 'none'; return; }
+      const lines = lineSeries.map(s => ({ name: s.cat.name, color: s.cat.color, secs: s.buckets[bestI] })).filter(l => l.secs > 0);
+      if (!lines.length) { tooltip.style.display = 'none'; return; }
+      tooltip.innerHTML =
+        '<div class="f-tooltip-date">' + lineLabels[bestI] + '</div>' +
+        lines.map(l => '<div class="f-tooltip-row"><span class="f-tooltip-dot" style="background:' + l.color + '"></span>' + l.name + ' · ' + fmtS(l.secs) + '</div>').join('');
+      tooltip.style.display = 'block';
+      tooltip.style.left = Math.min(clientX + 12, window.innerWidth - tooltip.offsetWidth - 10) + 'px';
+      tooltip.style.top  = (clientY - 60) + 'px';
+    }
+
+    canvas.onmousemove = e => handleMove(e.clientX, e.clientY);
+    canvas.onmouseleave = () => { tooltip.style.display = 'none'; };
+    canvas.ontouchstart = e => { e.preventDefault(); handleMove(e.touches[0].clientX, e.touches[0].clientY); };
+    canvas.ontouchend = () => { setTimeout(() => { tooltip.style.display = 'none'; }, 1200); };
+  }
+
+  // ── Donut chart (animated, rounded caps, glow) ───────────────
+  function drawDonutFrame(data, progress) {
+    const canvas = document.getElementById('fDonutCanvas');
+    const S = 150, dpr = window.devicePixelRatio || 1;
+    canvas.width = S * dpr; canvas.height = S * dpr;
+    canvas.style.width = S + 'px'; canvas.style.height = S + 'px';
+    const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, S, S);
+
+    const cx = S/2, cy = S/2;
+    const outer = cx - 5, inner = outer * 0.54;
+    const mid = (outer + inner) / 2, lw = outer - inner;
+
+    // Background track
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = lw; ctx.lineCap = 'butt';
+    ctx.beginPath(); ctx.arc(cx, cy, mid, 0, Math.PI*2); ctx.stroke();
+
+    const total = data.reduce((s, d) => s + d.secs, 0);
+    if (data.length) {
+      const GAP = data.length > 1 ? 0.07 : 0;
+      let a = -Math.PI / 2;
+      ctx.lineCap = 'round';
+      data.forEach(d => {
+        const fullSweep = (d.secs / total) * Math.PI * 2 - GAP;
+        const sweep = Math.max(0, fullSweep * progress);
+        if (sweep > 0.04) {
+          ctx.lineWidth = lw; ctx.strokeStyle = d.color;
+          ctx.shadowBlur = 10; ctx.shadowColor = hexToRgba(d.color, 0.45);
+          ctx.beginPath(); ctx.arc(cx, cy, mid, a + GAP/2, a + GAP/2 + sweep); ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+        a += (d.secs / total) * Math.PI * 2;
+      });
+    }
+
+    // Center text
+    ctx.fillStyle = 'rgba(255,255,255,0.90)';
+    ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(total > 0 ? durStr(total) : '—', cx, cy - 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '9px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillText('total', cx, cy + 9);
+  }
+
+  function animDonut(data) {
+    if (donutAnimId) { cancelAnimationFrame(donutAnimId); donutAnimId = null; }
+    let prog = 0;
+    function frame() {
+      prog = Math.min(1, prog + 0.055);
+      drawDonutFrame(data, prog);
+      if (prog < 1) donutAnimId = requestAnimationFrame(frame); else donutAnimId = null;
+    }
+    donutAnimId = requestAnimationFrame(frame);
+  }
+
+  // ── Legend pills ─────────────────────────────────────────────
   function drawLegend(data) {
     const el = document.getElementById('fLegend'); el.innerHTML = '';
-    if (!data.length) { el.innerHTML = '<div class="f-no-data">No sessions logged yet.</div>'; return; }
-    data.forEach(d => {
-      const item = document.createElement('div'); item.className = 'f-legend-item';
-      item.innerHTML = '<span class="f-legend-dot" style="background:' + d.color + '"></span>'
-        + d.name + '&ensp;<span class="f-legend-val">' + durStr(d.secs) + '</span>';
-      el.appendChild(item);
+    if (!data.length) {
+      const e = document.createElement('div'); e.className = 'f-no-data'; e.textContent = 'No sessions yet.';
+      el.appendChild(e); return;
+    }
+    const total = data.reduce((s, d) => s + d.secs, 0);
+    [...data].sort((a,b) => b.secs - a.secs).forEach(d => {
+      const pct = total > 0 ? Math.round(d.secs / total * 100) : 0;
+      const pill = document.createElement('div'); pill.className = 'f-legend-pill';
+      pill.innerHTML =
+        '<span class="f-legend-dot" style="background:' + d.color + '"></span>' +
+        '<span class="f-legend-name">' + d.name + '</span>' +
+        '<span class="f-legend-val">' + fmtS(d.secs) + '</span>' +
+        '<span class="f-legend-pct">' + pct + '%</span>';
+      el.appendChild(pill);
     });
   }
 
   function drawCharts() {
-    const data = aggregate(period);
-    drawBar(data); drawDonut(data); drawLegend(data);
+    const flatData = aggregateFlat(period);
+    drawLine();
+    animDonut(flatData);
+    drawLegend(flatData);
   }
 
-  // ── Init ──────────────────────────────────────────────────────
-  refreshCatSelects();
-  buildSwatches('fSwatches', pickedColor, c => { pickedColor = c; });
-  buildSwatches('fManSwatches', manPickedColor, c => { manPickedColor = c; });
+  // ── Init ─────────────────────────────────────────────────────
+  ensureDefaults();
+  activeCatId = getAllCats()[0]?.id || DEFAULT_CAT.id;
+  renderChips();
+  refreshManCatSelect();
+  buildSwatchPicker('fNewCatSwatches', c => { newCatColor = c; });
   setMode('pomodoro');
-  renderPending();
   updateManDur();
   requestAnimationFrame(drawCharts);
 
@@ -1106,9 +1420,8 @@ canvas { display: block; width: 100%; }
   window.addEventListener('load', () => {
     if (window.initCloudSync) {
       initCloudSync({
-        appKey: 'focus',
-        syncedKeys: [K_CATS, K_SESS],
-        onApplied() { refreshCatSelects(); drawCharts(); }
+        appKey: 'focus', syncedKeys: [K_CATS, K_SESS],
+        onApplied() { renderChips(); refreshManCatSelect(); drawCharts(); }
       });
     }
   });
