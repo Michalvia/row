@@ -691,12 +691,6 @@ function renderCatBar() {
       chip.style.borderColor=hexToRgba(cat.color,0.4);
       chip.style.color=cat.color;
     }
-    if(!cat.builtin){
-      const x=document.createElement('button');
-      x.className='chip-x'; x.textContent='×';
-      x.addEventListener('click',e=>{e.stopPropagation();deleteCat(cat.id);});
-      chip.appendChild(x);
-    }
     let pressTimer;
     chip.addEventListener('pointerdown',()=>{ pressTimer=setTimeout(()=>showCtxMenu(cat,chip),520); });
     chip.addEventListener('pointerup',()=>clearTimeout(pressTimer));
@@ -711,10 +705,13 @@ function renderCatBar() {
 }
 
 function deleteCat(id) {
-  if(id==='cat_work') return;
   cats=cats.map(c=>c.id===id?{...c,archived:true}:c);
-  const remaining=cats.filter(c=>!c.archived);
-  if(!remaining.length){ cats=cats.map(c=>c.id==='cat_work'?{...c,archived:false}:c); }
+  // If nothing left, restore Work immediately
+  if(!cats.filter(c=>!c.archived).length){
+    const wi=cats.findIndex(c=>c.id==='cat_work');
+    if(wi>=0) cats[wi]={...cats[wi],archived:false};
+    else cats.unshift({...DEFAULT_CAT});
+  }
   saveCats(cats);
   if(activeCatId===id) activeCatId=cats.find(c=>!c.archived)?.id||'cat_work';
   renderCatBar(); renderTimerControls();
@@ -724,9 +721,12 @@ function showCtxMenu(cat,el) {
   const menu=document.getElementById('ctxMenu');
   menu.style.display='block';
   const r=el.getBoundingClientRect();
+  // Only hide Delete when this cat is the sole active one (deleting would just restore it)
+  const activeCats=cats.filter(c=>!c.archived);
+  const canDelete=activeCats.length>1;
   menu.innerHTML=`<div class="ctx-menu" style="position:fixed;top:${r.bottom+6}px;left:${Math.min(r.left,window.innerWidth-170)}px">
-    <div class="ctx-item" id="ctxEdit">Edit Colour</div>
-    ${!cat.builtin?'<div class="ctx-item danger" id="ctxDel">Delete</div>':''}
+    <div class="ctx-item" id="ctxEdit">Edit</div>
+    ${canDelete?'<div class="ctx-item danger" id="ctxDel">Delete</div>':''}
   </div>`;
   document.getElementById('ctxEdit')?.addEventListener('click',()=>{ openCatSheet(cat); closeCtxMenu(); });
   document.getElementById('ctxDel')?.addEventListener('click',()=>{ deleteCat(cat.id); closeCtxMenu(); });
