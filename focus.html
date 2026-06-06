@@ -29,41 +29,29 @@ html, body {
   font-family: var(--font); font-size: 15px; line-height: 1.5;
   -webkit-font-smoothing: antialiased; min-height: 100vh; overflow-x: hidden;
 }
-body { position: relative; }
-body::before {
-  content: '';
-  position: fixed; inset: -10%;
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(60% 45% at 82% 14%, rgba(224,118,88,0.16) 0%, transparent 55%),
-    radial-gradient(55% 45% at 18% 90%, rgba(180,180,200,0.06) 0%, transparent 55%);
-  filter: blur(40px) saturate(1.05);
-  pointer-events: none; z-index: -2;
+    radial-gradient(ellipse 70% 55% at 85% 10%, rgba(224,118,88,0.28) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 15% 95%, rgba(107,180,220,0.14) 0%, transparent 60%);
+  filter: blur(48px);
   animation: drift 36s ease-in-out infinite alternate;
 }
-body::after {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,0.014) 1px, transparent 1px);
+.bg-grain {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,0.018) 1px, transparent 1px);
   background-size: 3px 3px;
-  opacity: 0.7; pointer-events: none; z-index: -1;
 }
 @keyframes drift {
   0%   { transform: translate3d(0,0,0); }
   100% { transform: translate3d(-22px,14px,0); }
 }
 main {
+  position: relative; z-index: 1;
   max-width: 480px; margin: 0 auto;
   padding: 16px max(18px, env(safe-area-inset-right)) 100px max(18px, env(safe-area-inset-left));
   display: flex; flex-direction: column; gap: 12px;
 }
-.page-title {
-  font-size: 28px; font-weight: 700; letter-spacing: -0.025em;
-  background: linear-gradient(180deg, #FFFFFF 0%, #C7C4BC 120%);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
-  margin-bottom: 2px;
-}
-@media (max-width: 480px) { .page-title { font-size: 22px; } }
 
 /* ── Cards ── */
 .card {
@@ -525,9 +513,9 @@ main {
 </style>
 </head>
 <body>
+<div class="bg-canvas" aria-hidden="true"></div>
+<div class="bg-grain" aria-hidden="true"></div>
 <main>
-
-<h1 class="page-title">Focus</h1>
 
 <!-- ── 1. Category ── -->
 <div class="card">
