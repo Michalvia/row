@@ -442,13 +442,14 @@ main {
 .picker-row { display:flex; justify-content:center; gap:16px; }
 .drum-unit { font-size:11px; font-weight:700; color:var(--text-tertiary); margin-top:5px; letter-spacing:0.06em; text-transform:uppercase; }
 .drum-sep-lg { font-size:24px; font-weight:600; color:var(--text-tertiary); display:flex; align-items:center; padding-bottom:4px; }
-/* ── Timer picker slide animation ── */
+/* ── Timer picker / preset slide animation ── */
 .timer-dur-picker { overflow:hidden; max-height:280px; opacity:1; margin-bottom:18px; transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease, margin-bottom 0.5s cubic-bezier(0.22,1,0.36,1); }
 .timer-dur-picker.picker-hidden { max-height:0; opacity:0; pointer-events:none; margin-bottom:0; }
+.hide-on-run { overflow:hidden; max-height:400px; opacity:1; transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease; }
+.hide-on-run.picker-hidden { max-height:0; opacity:0; pointer-events:none; }
 /* ── Time format toggle ── */
-.time-fmt-btn { display:none; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.10); border-radius:6px; color:var(--text-tertiary); font-size:10px; font-weight:700; font-family:var(--font-mono); padding:2px 7px; cursor:pointer; letter-spacing:0.05em; transition:background 0.15s; margin:3px 0 5px; }
+.time-fmt-btn { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.10); border-radius:6px; color:var(--text-tertiary); font-size:10px; font-weight:700; font-family:var(--font-mono); padding:2px 7px; cursor:pointer; letter-spacing:0.05em; transition:background 0.15s; margin:3px 0 5px; }
 .time-fmt-btn:hover { background:rgba(255,255,255,0.14); }
-.time-fmt-btn.active-mode { display:block; }
 /* ── Legend subtitle ── */
 .legend-name-col { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
 .legend-subtime { font-size:10px; color:var(--text-tertiary); font-weight:500; line-height:1.3; }
@@ -491,7 +492,7 @@ main {
   </div>
 
   <!-- Pomodoro presets (hidden in other modes) -->
-  <div id="pomodoroPresets">
+  <div id="pomodoroPresets" class="hide-on-run">
     <div class="preset-grid" id="presetGrid">
       <button class="preset-card active" data-preset="pomodoro">
         <span class="preset-name">Pomodoro</span>
@@ -587,7 +588,7 @@ main {
 <!-- ── 3. Today So Far (shown once time is logged) ── -->
 <div class="card" id="todayCard" style="display:none">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-    <div class="card-title" style="margin-bottom:0">Today So Far</div>
+    <div class="card-title" id="todayCardTitle" style="margin-bottom:0">Today So Far</div>
     <div class="seg" id="rangeSeg" style="padding:2px;border-radius:8px">
       <button class="active" data-r="day" style="padding:4px 10px;font-size:11px;border-radius:6px">Day</button>
       <button data-r="week" style="padding:4px 10px;font-size:11px;border-radius:6px">Week</button>
@@ -891,11 +892,11 @@ function swGetElapsed() { return swElapsed+(timerState==='running'?(Date.now()-s
 
 function updateRing(rem,total) {
   document.getElementById('ringProgress').style.strokeDashoffset = CIRC*(1-(total>0?rem/total:1));
-  document.getElementById('ringTime').textContent = timerMode==='timer' ? fmtTimerDisplay(rem) : fmtSecs(rem);
+  document.getElementById('ringTime').textContent = fmtDisplaySecs(rem);
 }
 function updateRingSw(elapsed) {
   document.getElementById('ringProgress').style.strokeDashoffset = Math.max(0, CIRC*(1-Math.min(elapsed/SW_REF,1)));
-  document.getElementById('ringTime').textContent = fmtElapsed(elapsed);
+  document.getElementById('ringTime').textContent = fmtDisplaySecs(elapsed);
 }
 
 function tickCountdown() {
@@ -921,6 +922,7 @@ function doStart() {
   if(timerState==='idle'){
     if(!hasCat()) return; sessionStart=new Date(); timerPhase='work';
     if(timerMode==='timer'){ workTotal=getTimerWorkTotal(); document.getElementById('timerDurRow').classList.add('picker-hidden'); }
+    if(timerMode==='pomodoro') document.getElementById('pomodoroPresets').classList.add('picker-hidden');
     remaining=workTotal; document.getElementById('ringProgress').style.stroke='#6BE3A4';
   }
   startTs=Date.now(); startRem=remaining; timerState='running';
@@ -974,7 +976,8 @@ function resetToIdle() {
     swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
   } else {
     if(timerMode==='timer'){ document.getElementById('timerDurRow').classList.remove('picker-hidden'); updateTimerFromHrMode(); }
-    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=timerMode==='timer'?fmtTimerDisplay(workTotal):fmtSecs(workTotal);
+    if(timerMode==='pomodoro') document.getElementById('pomodoroPresets').classList.remove('picker-hidden');
+    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=fmtDisplaySecs(workTotal);
   }
   setPhaseLabel(getCatLabel(),false); hideCompletion(); renderTimerControls(); updateTodayCard();
 }
@@ -1020,12 +1023,12 @@ document.getElementById('modeSeg').addEventListener('click',e=>{
   document.getElementById('pomodoroPresets').style.display=timerMode==='pomodoro'?'':'none';
   document.getElementById('timerDurRow').style.display=timerMode==='timer'?'':'none';
   const rp=document.getElementById('ringProgress'); rp.style.stroke='#6BE3A4';
-  document.getElementById('timeFmtBtn').classList.toggle('active-mode', timerMode==='timer');
   if(timerMode==='stopwatch'){
     swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
   } else {
     if(timerMode==='timer'){ document.getElementById('timerDurRow').classList.remove('picker-hidden'); updateTimerFromHrMode(); }
-    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=timerMode==='timer'?fmtTimerDisplay(workTotal):fmtSecs(workTotal);
+    if(timerMode==='pomodoro') document.getElementById('pomodoroPresets').classList.remove('picker-hidden');
+    remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=fmtDisplaySecs(workTotal);
   }
   setPhaseLabel(getCatLabel(),false); renderTimerControls();
 });
@@ -1038,7 +1041,7 @@ document.getElementById('completeBtn').addEventListener('click',doCompleteEarly)
 let cwDrum, cbDrum, timerHrDrum, timerHrMinDrum;
 let timerDisplayFmt = 'ms'; // 'ms' = MM:SS  |  'hms' = H:MM:SS
 
-function fmtTimerDisplay(secs) {
+function fmtDisplaySecs(secs) {
   secs = Math.max(0, Math.ceil(secs));
   const h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
   if(timerDisplayFmt==='hms') return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
@@ -1073,8 +1076,8 @@ function initDrumPickers() {
 document.getElementById('timeFmtBtn').addEventListener('click',()=>{
   timerDisplayFmt = timerDisplayFmt==='ms' ? 'hms' : 'ms';
   document.getElementById('timeFmtBtn').textContent = timerDisplayFmt==='ms' ? 'hms' : 'ms';
-  const rem = timerMode==='timer' ? getLiveRemaining() : workTotal;
-  document.getElementById('ringTime').textContent = fmtTimerDisplay(rem);
+  const secs = timerMode==='stopwatch' ? swGetElapsed() : getLiveRemaining();
+  document.getElementById('ringTime').textContent = fmtDisplaySecs(secs);
 });
 
 // Pomodoro preset selection
@@ -1121,6 +1124,8 @@ function updateTodayCard() {
   const card=document.getElementById('todayCard');
   if(total===0){ card.style.display='none'; return; }
   card.style.display='';
+  const titles={day:'Today So Far',week:'This Week',month:'This Month',year:'This Year'};
+  document.getElementById('todayCardTitle').textContent=titles[todayRange]||'Today So Far';
   document.getElementById('todayTotal').textContent=fmtHm(total);
   const catTotals={};
   filtered.forEach(s=>{ catTotals[s.categoryId]=(catTotals[s.categoryId]||0)+s.durationSeconds; });
