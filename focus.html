@@ -399,11 +399,11 @@ main {
 .today-cat-row { margin-bottom: 12px; }
 .today-cat-row:last-child { margin-bottom: 0; }
 .today-bar-track {
-  height: 4px; background: rgba(255,255,255,0.06);
-  border-radius: 2px; overflow: hidden; margin-top: 5px;
+  height: 5px; background: rgba(255,255,255,0.06);
+  border-radius: 3px; overflow: visible; margin-top: 6px;
 }
 .today-bar-fill {
-  height: 100%; border-radius: 2px;
+  height: 100%; border-radius: 3px;
   transition: width 0.5s var(--ease-spring);
 }
 
@@ -529,9 +529,9 @@ main {
 .drum-unit { font-size:11px; font-weight:700; color:var(--text-tertiary); margin-top:5px; letter-spacing:0.06em; text-transform:uppercase; }
 .drum-sep-lg { font-size:24px; font-weight:600; color:var(--text-tertiary); display:flex; align-items:center; padding-bottom:4px; }
 /* ── Timer picker / preset slide animation ── */
-.timer-dur-picker { overflow:hidden; max-height:280px; opacity:1; margin-bottom:18px; transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease, margin-bottom 0.5s cubic-bezier(0.22,1,0.36,1); }
+.timer-dur-picker { overflow:hidden; max-height:280px; opacity:1; margin-bottom:18px; transition:max-height 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.22s ease, margin-bottom 0.28s cubic-bezier(0.22,1,0.36,1); }
 .timer-dur-picker.picker-hidden { max-height:0; opacity:0; pointer-events:none; margin-bottom:0; }
-.hide-on-run { overflow:hidden; max-height:400px; opacity:1; transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease; }
+.hide-on-run { overflow:hidden; max-height:400px; opacity:1; transition:max-height 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.22s ease; }
 .hide-on-run.picker-hidden { max-height:0; opacity:0; pointer-events:none; }
 /* ── Time format toggle ── */
 .time-fmt-btn { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.10); border-radius:6px; color:var(--text-tertiary); font-size:10px; font-weight:700; font-family:var(--font-mono); padding:2px 7px; cursor:pointer; letter-spacing:0.05em; transition:background 0.15s; margin:3px 0 5px; }
@@ -700,7 +700,7 @@ main {
   </div>
   <div class="lg-xlabel" id="lgLabels"></div>
   <div class="donut-wrap">
-    <div style="flex-shrink:0"><canvas id="donutCanvas" width="130" height="130"></canvas></div>
+    <div style="flex-shrink:0"><canvas id="donutCanvas" width="144" height="144"></canvas></div>
     <div class="donut-legend" id="donutLegend"></div>
   </div>
 </div>
@@ -1291,7 +1291,7 @@ function updateTodayCard() {
       <div style="font-size:12px;font-weight:700;color:var(--text-tertiary)">${pct}%</div>
     </div>
     <div class="today-bar-track">
-      <div class="today-bar-fill" style="width:${barW}%;background:${cat.color}"></div>
+      <div class="today-bar-fill" style="width:${barW}%;background:${cat.color};box-shadow:0 0 8px ${cat.color}88,0 0 2px ${cat.color}66"></div>
     </div>`;
     list.appendChild(row);
   });
@@ -1403,17 +1403,31 @@ function drawLineGraph(labels,totals){
 let donutRaf=null;
 function drawDonutFrame(data,prog,hlIdx){
   const cv=document.getElementById('donutCanvas'), ctx=cv.getContext('2d');
-  const W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=Math.min(W,H)/2-16,RI=R-22;
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=Math.min(W,H)/2-10,RI=R-18;
   ctx.clearRect(0,0,W,H);
+  /* track ring */
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.arc(cx,cy,RI,Math.PI*2,0,true); ctx.closePath();
+  ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fill();
+  ctx.restore();
   const total=data.reduce((a,d)=>a+d.val,0)||1;
   let start=-Math.PI/2;
   data.forEach((d,i)=>{
-    const sweep=(d.val/total)*Math.PI*2, hl=i===hlIdx, r=hl?R+4:R, ri=hl?RI-2:RI;
-    ctx.save(); ctx.shadowBlur=hl?18:8; ctx.shadowColor=hexToRgba(d.color,hl?0.7:0.4);
+    const sweep=(d.val/total)*Math.PI*2, hl=i===hlIdx, r=hl?R+3:R, ri=hl?RI-2:RI;
+    /* outer glow pass */
+    ctx.save();
+    ctx.shadowBlur=hl?32:20; ctx.shadowColor=hexToRgba(d.color,hl?0.85:0.5);
     ctx.beginPath(); ctx.arc(cx,cy,r,start,start+sweep*prog); ctx.arc(cx,cy,ri,start+sweep*prog,start,true); ctx.closePath();
-    ctx.fillStyle=d.color; ctx.fill(); ctx.restore(); start+=sweep*prog;
+    ctx.fillStyle=d.color; ctx.fill();
+    ctx.restore();
+    /* second glow pass for extra intensity */
+    ctx.save();
+    ctx.shadowBlur=hl?14:8; ctx.shadowColor=hexToRgba(d.color,1);
+    ctx.beginPath(); ctx.arc(cx,cy,r,start,start+sweep*prog); ctx.arc(cx,cy,ri,start+sweep*prog,start,true); ctx.closePath();
+    ctx.fillStyle=d.color; ctx.fill();
+    ctx.restore();
+    start+=sweep*prog;
   });
-  if(!data.length||!total){ ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.arc(cx,cy,RI,Math.PI*2,0,true); ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fill(); }
 }
 function animDonut(data,hlIdx=null){
   if(donutRaf) cancelAnimationFrame(donutRaf);
