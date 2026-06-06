@@ -323,6 +323,27 @@ body::after {
   .day-ring-status { font-size: 13px; }
 }
 
+/* ===== Work time strip ===== */
+.work-strip {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; margin-bottom: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+}
+.work-strip-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-tertiary);
+}
+.work-strip-right { display: flex; align-items: baseline; gap: 8px; }
+.work-strip-time {
+  font-size: 20px; font-weight: 700; letter-spacing: -0.5px;
+  color: var(--text-primary); font-family: var(--font-mono, monospace);
+}
+.work-strip-pct {
+  font-size: 11px; font-weight: 600; color: var(--success, #6BE3A4);
+}
+
 /* ===== Component 4: section + To Do List ===== */
 .section { margin-top: 8px; }
 .section-title {
@@ -821,6 +842,14 @@ body::after {
         <span id="dayRingHoursLabel">8:00 AM – 12:00 AM</span>
         <button class="day-ring-settings-btn" id="dayRingSettingsBtn" title="Edit sleep schedule" aria-label="Edit sleep schedule">⚙</button>
       </div>
+    </div>
+  </div>
+
+  <div class="work-strip">
+    <div class="work-strip-label">Time spent working</div>
+    <div class="work-strip-right">
+      <span class="work-strip-time" id="workStripTime">0m</span>
+      <span class="work-strip-pct" id="workStripPct">0% of awake time</span>
     </div>
   </div>
 
@@ -1793,6 +1822,24 @@ body::after {
   document.getElementById('schedSave').addEventListener('click', saveSchedModal);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSchedModal(); });
 
+  // ---------- Work-time strip ----------
+  function renderWorkStrip() {
+    let sessions = [];
+    try { sessions = JSON.parse(localStorage.getItem('focus:sessions')) || []; } catch {}
+    const todayStr = new Date().toDateString();
+    const totalSecs = sessions
+      .filter(s => new Date(s.at).toDateString() === todayStr)
+      .reduce((a, s) => a + s.durationSeconds, 0);
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const timeStr = h > 0 ? `${h}h ${m}m` : (m > 0 ? `${m}m` : '0m');
+    const now = new Date();
+    const awakeH = Math.max(0.1, now.getHours() + now.getMinutes() / 60 - WAKE_HOUR);
+    const pct = Math.min(100, Math.round((totalSecs / 3600 / awakeH) * 100));
+    document.getElementById('workStripTime').textContent = timeStr;
+    document.getElementById('workStripPct').textContent = pct + '% of awake time';
+  }
+
   // ---------- Boot ----------
   rollover();
   processStreak();
@@ -1800,12 +1847,14 @@ body::after {
   loadTomorrow();
   renderStreak();
   updateDayRing();
+  renderWorkStrip();
   setInterval(updateDayRing, 60 * 1000);
+  setInterval(renderWorkStrip, 60 * 1000);
   startTicker();
 
   // Re-render when storage changes from another tab (or our bridged parent).
   window.addEventListener('storage', () => {
-    loadToday(); loadTomorrow(); renderStreak();
+    loadToday(); loadTomorrow(); renderStreak(); renderWorkStrip();
   });
 })();
 </script>
