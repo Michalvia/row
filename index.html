@@ -316,6 +316,46 @@ body::after {
   height: 1px; background: rgba(255,255,255,0.07); margin: 4px 0;
 }
 
+/* ── Greeting ── */
+.greeting-section {
+  margin-bottom: 24px;
+}
+.greeting-text {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 7px;
+}
+.quote-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 600px;
+}
+.quote-bar {
+  width: 3px;
+  min-height: 100%;
+  align-self: stretch;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.04));
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.quote-body { display: flex; flex-direction: column; gap: 3px; }
+.quote-text {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.55;
+}
+.quote-author {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.07em;
+}
+
 /* ── WHOOP card ── */
 .whoop-header { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
 .whoop-status { display: flex; align-items: center; gap: 8px; }
@@ -359,6 +399,17 @@ body::after {
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
       </svg>
     </button>
+  </div>
+
+  <div class="greeting-section" id="greetingSection">
+    <div class="greeting-text" id="greetingText"></div>
+    <div class="quote-wrap">
+      <div class="quote-bar"></div>
+      <div class="quote-body">
+        <div class="quote-text" id="quoteText"></div>
+        <div class="quote-author" id="quoteAuthor"></div>
+      </div>
+    </div>
   </div>
 
   <div class="bento">
@@ -440,6 +491,12 @@ body::after {
       <button class="modal-close" id="modalClose" aria-label="Close">×</button>
     </div>
     <div class="modal-body">
+
+      <!-- Name -->
+      <div class="field-group">
+        <span class="field-label">Name</span>
+        <input type="text" class="field-input" id="nameInput" placeholder="Michal" maxlength="32">
+      </div>
 
       <!-- Height -->
       <div class="field-group">
@@ -550,6 +607,8 @@ body::after {
     const s = loadWater();
     const p = getProfile();
 
+    document.getElementById('nameInput').value = p.name || '';
+
     weightUnit = s.weightUnit || 'kg';
     heightUnit = p.heightUnit || 'cm';
 
@@ -628,6 +687,7 @@ body::after {
     saveWaterMerge({
       weightUnit,
       profile: Object.assign({}, s.profile || {}, {
+        name:              document.getElementById('nameInput').value.trim() || '',
         weightKg:          +readWeightKg().toFixed(2),
         heightCm:          +readHeightCm().toFixed(1),
         heightUnit,
@@ -636,6 +696,7 @@ body::after {
         activityHrsPerWeek: parseFloat(document.getElementById('activityInput').value) || 0,
       })
     });
+    renderGreeting();
     const btn = document.getElementById('saveBtn');
     btn.textContent = 'Saved ✓';
     btn.classList.add('saved');
@@ -727,6 +788,59 @@ body::after {
     const t = whoopTokens();
     if (t?.access_token) doSync(t);
   }
+
+  /* ── Greeting + quote ── */
+  const QUOTES = [
+    { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+    { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+    { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+    { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+    { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+    { text: "In the middle of every difficulty lies opportunity.", author: "Albert Einstein" },
+    { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+    { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
+    { text: "Whether you think you can or you think you can't, you're right.", author: "Henry Ford" },
+    { text: "The harder I work, the luckier I get.", author: "Samuel Goldwyn" },
+    { text: "Discipline is the bridge between goals and accomplishment.", author: "Jim Rohn" },
+    { text: "Energy and persistence conquer all things.", author: "Benjamin Franklin" },
+    { text: "Do what you can, with what you have, where you are.", author: "Theodore Roosevelt" },
+    { text: "Small steps every day lead to big results.", author: "Anonymous" },
+    { text: "The body achieves what the mind believes.", author: "Anonymous" },
+    { text: "Strength does not come from the body. It comes from the will of the soul.", author: "Mahatma Gandhi" },
+    { text: "Excellence is not a destination but a continuous journey.", author: "Brian Tracy" },
+    { text: "What lies behind us and what lies before us are tiny matters compared to what lies within us.", author: "Ralph Waldo Emerson" },
+    { text: "Take care of your body. It's the only place you have to live.", author: "Jim Rohn" },
+    { text: "Act as if what you do makes a difference. It does.", author: "William James" },
+    { text: "Motivation gets you started. Habit keeps you going.", author: "Jim Ryun" },
+    { text: "Hard choices, easy life. Easy choices, hard life.", author: "Jerzy Gregorek" },
+    { text: "The pain you feel today will be the strength you feel tomorrow.", author: "Arnold Schwarzenegger" },
+    { text: "Your future is created by what you do today, not tomorrow.", author: "Robert Kiyosaki" },
+    { text: "Success usually comes to those who are too busy to be looking for it.", author: "Henry David Thoreau" },
+    { text: "Don't limit your challenges. Challenge your limits.", author: "Jerry Dunn" },
+    { text: "Push yourself, because no one else is going to do it for you.", author: "Anonymous" },
+    { text: "Great things never came from comfort zones.", author: "Anonymous" },
+    { text: "Dream big. Work hard. Stay focused.", author: "Anonymous" },
+    { text: "Progress, not perfection.", author: "Anonymous" },
+    { text: "One day or day one — you decide.", author: "Anonymous" },
+  ];
+
+  function renderGreeting() {
+    const hour = new Date().getHours();
+    const salutation = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const p = getProfile();
+    const name = p.name || '';
+    document.getElementById('greetingText').textContent = name ? `${salutation}, ${name}` : salutation;
+
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const dayOfYear = Math.floor((now - start) / 86400000);
+    const q = QUOTES[dayOfYear % QUOTES.length];
+    document.getElementById('quoteText').textContent = `"${q.text}"`;
+    document.getElementById('quoteAuthor').textContent = `— ${q.author}`;
+  }
+
+  renderGreeting();
 
 })();
 </script>
