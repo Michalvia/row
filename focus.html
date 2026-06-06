@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050506">
+<meta name="color-scheme" content="dark">
+<title>Focus — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync.js" defer></script>
+<script src="topbar.js" defer></script>
+<style>
+:root {
+  --bg: #050506;
+  --bg-card: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.06);
+  --border-strong: rgba(255,255,255,0.12);
+  --text-primary: #FAFAFA;
+  --text-secondary: #B8B6B0;
+  --text-tertiary: #76746E;
+  --accent: #6BE3A4;
+  --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg); color: var(--text-secondary);
+  font-family: var(--font); font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; min-height: 100vh; overflow-x: hidden;
+}
+main {
+  max-width: 480px; margin: 0 auto;
+  padding: 14px max(14px, env(safe-area-inset-right)) 28px max(14px, env(safe-area-inset-left));
+}
+
+/* ── Mode tabs ── */
+.f-mode-tabs {
+  display: flex; gap: 3px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 12px; padding: 4px; margin-bottom: 12px;
+}
+.f-mode-tab {
+  flex: 1; padding: 8px 0; background: none; border: none; border-radius: 9px;
+  color: var(--text-tertiary); font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.f-mode-tab.active { background: rgba(255,255,255,0.09); color: var(--text-primary); }
+
+/* ── Timer card ── */
+.f-timer-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 22px 18px 20px; margin-bottom: 10px; text-align: center;
+}
+
+/* Pomodoro cycle */
+.f-cycle-opts { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
+.f-cycle-btn {
+  padding: 5px 13px; background: none;
+  border: 1px solid var(--border-strong); border-radius: 20px;
+  color: var(--text-tertiary); font-family: var(--font); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.f-cycle-btn.active {
+  background: rgba(107,227,164,0.12); border-color: rgba(107,227,164,0.35); color: #6BE3A4;
+}
+
+/* Countdown inputs */
+.f-cd-row {
+  display: flex; align-items: flex-end; justify-content: center; gap: 3px; margin-bottom: 14px;
+}
+.f-cd-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.f-cd-num {
+  width: 66px; padding: 8px 4px; text-align: center; outline: none;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border-strong);
+  border-radius: 10px; color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 26px; font-weight: 700;
+  -moz-appearance: textfield; transition: border-color 0.15s;
+}
+.f-cd-num::-webkit-outer-spin-button,
+.f-cd-num::-webkit-inner-spin-button { -webkit-appearance: none; }
+.f-cd-num:focus { border-color: rgba(255,255,255,0.24); }
+.f-cd-unit {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-tertiary);
+}
+.f-cd-sep { font-size: 26px; font-weight: 700; color: var(--text-tertiary); padding-bottom: 20px; }
+
+/* Display */
+.f-display {
+  font-family: var(--font-mono); font-size: clamp(54px, 18vw, 80px); font-weight: 700;
+  letter-spacing: -2px; color: var(--text-primary); line-height: 1; margin-bottom: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.f-phase {
+  font-size: 11px; color: var(--text-tertiary); font-weight: 700;
+  letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 20px; min-height: 15px;
+}
+
+/* Controls */
+.f-controls { display: flex; gap: 8px; justify-content: center; }
+.f-btn-primary {
+  padding: 11px 24px;
+  background: rgba(107,227,164,0.10); border: 1px solid rgba(107,227,164,0.28);
+  border-radius: 12px; color: #6BE3A4; font-family: var(--font); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.f-btn-primary:hover { background: rgba(107,227,164,0.18); }
+.f-btn-secondary {
+  padding: 11px 18px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong);
+  border-radius: 12px; color: var(--text-secondary); font-family: var(--font); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.f-btn-secondary:hover { background: rgba(255,255,255,0.09); }
+
+/* Laps */
+.f-lap-list {
+  list-style: none; margin-top: 14px; max-height: 148px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.f-lap-item {
+  display: flex; justify-content: space-between; padding: 6px 12px;
+  background: rgba(255,255,255,0.04); border-radius: 8px;
+  font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary);
+}
+.f-lap-item.latest { color: var(--text-primary); }
+
+/* ── Cards ── */
+.f-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 18px; margin-bottom: 10px;
+}
+.f-card-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-bottom: 14px;
+}
+
+/* ── Log card ── */
+.f-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.f-cat-select {
+  flex: 1; padding: 10px 12px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong);
+  border-radius: 10px; color: var(--text-primary); font-family: var(--font); font-size: 14px;
+  outline: none; cursor: pointer; appearance: none; -webkit-appearance: none;
+}
+.f-icon-btn {
+  width: 42px; height: 42px; flex-shrink: 0;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong);
+  border-radius: 10px; color: var(--text-secondary); font-size: 20px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.f-icon-btn:hover { background: rgba(255,255,255,0.09); }
+.f-icon-btn.open { color: #6BE3A4; border-color: rgba(107,227,164,0.35); background: rgba(107,227,164,0.08); }
+
+/* New category form */
+.f-cat-form {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 10px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.f-cat-input {
+  width: 100%; padding: 9px 12px; outline: none;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong);
+  border-radius: 8px; color: var(--text-primary); font-family: var(--font); font-size: 14px;
+  transition: border-color 0.15s;
+}
+.f-cat-input::placeholder { color: var(--text-tertiary); }
+.f-cat-input:focus { border-color: rgba(255,255,255,0.22); }
+.f-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.f-swatch {
+  width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent;
+  cursor: pointer; transition: transform 0.12s, border-color 0.12s; flex-shrink: 0;
+}
+.f-swatch:hover { transform: scale(1.15); }
+.f-swatch.sel { border-color: rgba(255,255,255,0.6); transform: scale(1.1); }
+.f-save-cat {
+  padding: 9px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-strong);
+  border-radius: 8px; color: var(--text-secondary); font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s; width: 100%;
+}
+.f-save-cat:hover { background: rgba(255,255,255,0.10); }
+
+/* Duration row */
+.f-sub-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-bottom: 6px;
+}
+.f-dur-row { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 12px; }
+.f-dur-num {
+  width: 54px; padding: 7px 4px; text-align: center; outline: none;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border-strong);
+  border-radius: 9px; color: var(--text-primary); font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+  -moz-appearance: textfield; transition: border-color 0.15s;
+}
+.f-dur-num::-webkit-outer-spin-button,
+.f-dur-num::-webkit-inner-spin-button { -webkit-appearance: none; }
+.f-dur-num:focus { border-color: rgba(255,255,255,0.22); }
+.f-dur-sep { font-size: 22px; font-weight: 700; color: var(--text-tertiary); }
+.f-log-err { font-size: 12px; color: #FF8A8A; min-height: 16px; margin-bottom: 8px; }
+.f-log-btn {
+  width: 100%; padding: 12px;
+  background: rgba(107,227,164,0.10); border: 1px solid rgba(107,227,164,0.28);
+  border-radius: 12px; color: #6BE3A4; font-family: var(--font); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.f-log-btn:hover { background: rgba(107,227,164,0.18); }
+
+/* ── Analytics ── */
+.f-period-tabs {
+  display: flex; gap: 3px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 8px; padding: 3px; margin-bottom: 14px;
+}
+.f-period-tab {
+  flex: 1; padding: 6px 0; background: none; border: none; border-radius: 6px;
+  color: var(--text-tertiary); font-family: var(--font); font-size: 11px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.f-period-tab.active { background: rgba(255,255,255,0.09); color: var(--text-primary); }
+.f-charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+@media (max-width: 340px) { .f-charts-row { grid-template-columns: 1fr; } }
+.f-chart-wrap {
+  background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 6px;
+}
+.f-chart-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-tertiary); }
+canvas { display: block; width: 100%; }
+.f-legend { display: flex; flex-wrap: wrap; gap: 8px; }
+.f-legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+.f-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.f-legend-val { color: var(--text-tertiary); font-size: 11px; }
+.f-no-data { font-size: 12px; color: var(--text-tertiary); text-align: center; padding: 18px 0; }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- Mode tabs -->
+  <div class="f-mode-tabs" id="fModeTabs">
+    <button class="f-mode-tab active" data-mode="pomodoro">Pomodoro</button>
+    <button class="f-mode-tab"        data-mode="countdown">Countdown</button>
+    <button class="f-mode-tab"        data-mode="stopwatch">Stopwatch</button>
+  </div>
+
+  <!-- Timer card -->
+  <div class="f-timer-card">
+    <!-- Pomodoro cycle -->
+    <div class="f-cycle-opts" id="fCycleOpts">
+      <button class="f-cycle-btn active" data-cycle="25-5">25 / 5</button>
+      <button class="f-cycle-btn"        data-cycle="50-10">50 / 10</button>
+      <button class="f-cycle-btn"        data-cycle="90-20">90 / 20</button>
+    </div>
+    <!-- Countdown inputs -->
+    <div class="f-cd-row" id="fCdRow" style="display:none">
+      <div class="f-cd-col">
+        <input type="number" class="f-cd-num" id="cdH" min="0" max="23" value="0">
+        <span class="f-cd-unit">hr</span>
+      </div>
+      <span class="f-cd-sep">:</span>
+      <div class="f-cd-col">
+        <input type="number" class="f-cd-num" id="cdM" min="0" max="59" value="25">
+        <span class="f-cd-unit">min</span>
+      </div>
+      <span class="f-cd-sep">:</span>
+      <div class="f-cd-col">
+        <input type="number" class="f-cd-num" id="cdS" min="0" max="59" value="0">
+        <span class="f-cd-unit">sec</span>
+      </div>
+    </div>
+    <!-- Display -->
+    <div class="f-display" id="fDisplay">25:00</div>
+    <div class="f-phase"   id="fPhase">Work · Round 1</div>
+    <!-- Controls -->
+    <div class="f-controls">
+      <button class="f-btn-primary"   id="fStartBtn">▶&ensp;Start</button>
+      <button class="f-btn-secondary" id="fResetBtn">↺&ensp;Reset</button>
+      <button class="f-btn-secondary" id="fLapBtn" style="display:none">Lap</button>
+    </div>
+    <ul class="f-lap-list" id="fLapList"></ul>
+  </div>
+
+  <!-- Log session card -->
+  <div class="f-card">
+    <div class="f-card-title">Log Session</div>
+    <div class="f-row">
+      <select class="f-cat-select" id="fCatSelect">
+        <option value="">— Pick a category —</option>
+      </select>
+      <button class="f-icon-btn" id="fCatNewBtn" title="New category">+</button>
+    </div>
+    <!-- New category form (collapsed by default) -->
+    <div class="f-cat-form" id="fCatForm" style="display:none">
+      <input type="text" class="f-cat-input" id="fCatName" placeholder="Category name…" maxlength="30">
+      <div class="f-swatches" id="fSwatches"></div>
+      <button class="f-save-cat" id="fSaveCatBtn">Save Category</button>
+    </div>
+    <div class="f-sub-label">Duration</div>
+    <div class="f-dur-row">
+      <input type="number" class="f-dur-num" id="logH" min="0" max="23" value="0">
+      <span class="f-dur-sep">:</span>
+      <input type="number" class="f-dur-num" id="logM" min="0" max="59" value="0">
+      <span class="f-dur-sep">:</span>
+      <input type="number" class="f-dur-num" id="logS" min="0" max="59" value="0">
+    </div>
+    <div class="f-log-err" id="fLogErr"></div>
+    <button class="f-log-btn" id="fLogBtn">Save Session</button>
+  </div>
+
+  <!-- Analytics card -->
+  <div class="f-card">
+    <div class="f-card-title">Analytics</div>
+    <div class="f-period-tabs" id="fPeriodTabs">
+      <button class="f-period-tab active" data-period="today">Today</button>
+      <button class="f-period-tab"        data-period="7d">7 Days</button>
+      <button class="f-period-tab"        data-period="month">Month</button>
+      <button class="f-period-tab"        data-period="year">Year</button>
+    </div>
+    <div class="f-charts-row">
+      <div class="f-chart-wrap">
+        <div class="f-chart-lbl">Time by Category</div>
+        <canvas id="fBarCanvas"></canvas>
+      </div>
+      <div class="f-chart-wrap">
+        <div class="f-chart-lbl">Proportion</div>
+        <canvas id="fDonutCanvas"></canvas>
+      </div>
+    </div>
+    <div class="f-legend" id="fLegend"></div>
+  </div>
+
+</main>
+<script>
+(function () {
+  'use strict';
+
+  // ── Storage keys ──────────────────────────────────────────────
+  const K_CATS = 'focus:categories';
+  const K_SESS = 'focus:sessions';
+
+  const PALETTE = [
+    '#6BE3A4','#7B9CEF','#FFB347','#FF6B6B','#C77DFF',
+    '#38B6FF','#FCD34D','#F8A4C8','#6EE7B7','#FDBA74'
+  ];
+
+  function getCats() { try { return JSON.parse(localStorage.getItem(K_CATS)) || []; } catch { return []; } }
+  function getSess() { try { return JSON.parse(localStorage.getItem(K_SESS)) || []; } catch { return []; } }
+  function saveCats(d) { try { localStorage.setItem(K_CATS, JSON.stringify(d)); } catch {} }
+  function saveSess(d) { try { localStorage.setItem(K_SESS, JSON.stringify(d)); } catch {} }
+
+  // ── Timer state ───────────────────────────────────────────────
+  let mode      = 'pomodoro';
+  let running   = false;
+  let pomoWork  = 25, pomoBreak = 5;
+  let pomoPhase = 'work', pomoRound = 1;
+  let timerTotal = 25 * 60; // seconds (pomo/countdown)
+  let timerLeft  = 25 * 60;
+  let startedAt  = 0;        // Date.now() when last resumed
+  let pausedMs   = 0;        // cumulative ms elapsed before last start
+  let swLaps     = [];
+  let ticker     = null;
+
+  // ── Elements ──────────────────────────────────────────────────
+  const displayEl = document.getElementById('fDisplay');
+  const phaseEl   = document.getElementById('fPhase');
+  const startBtn  = document.getElementById('fStartBtn');
+  const resetBtn  = document.getElementById('fResetBtn');
+  const lapBtn    = document.getElementById('fLapBtn');
+  const lapListEl = document.getElementById('fLapList');
+  const cycleOpts = document.getElementById('fCycleOpts');
+  const cdRow     = document.getElementById('fCdRow');
+
+  // ── Format ───────────────────────────────────────────────────
+  function pad(n) { return String(Math.floor(n)).padStart(2, '0'); }
+  function fmtS(s) {
+    s = Math.max(0, Math.round(s));
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    return h > 0 ? h + ':' + pad(m) + ':' + pad(ss) : pad(m) + ':' + pad(ss);
+  }
+  function fmtMs(ms) { return fmtS(ms / 1000); }
+  function durStr(s) {
+    return s >= 3600 ? (s / 3600).toFixed(1) + 'h' : Math.round(s / 60) + 'm';
+  }
+
+  // ── Timer core ────────────────────────────────────────────────
+  function elapsedMs() {
+    return pausedMs + (running ? Date.now() - startedAt : 0);
+  }
+
+  function renderDisplay() {
+    if (mode === 'stopwatch') {
+      displayEl.textContent = fmtMs(elapsedMs());
+      phaseEl.textContent   = running ? 'Counting up…' : (pausedMs > 0 ? 'Paused' : '');
+    } else {
+      displayEl.textContent = fmtS(timerLeft);
+      if (mode === 'pomodoro') {
+        phaseEl.textContent = (pomoPhase === 'work' ? 'Work' : 'Break') + ' · Round ' + pomoRound;
+      } else {
+        phaseEl.textContent = running ? 'Counting down…' : (timerLeft > 0 && timerLeft < timerTotal ? 'Paused' : '');
+      }
+    }
+    startBtn.textContent = running ? '⏸ Pause' : '▶ Start';
+  }
+
+  function tick() {
+    if (mode === 'stopwatch') { renderDisplay(); return; }
+    timerLeft = Math.max(0, timerTotal - elapsedMs() / 1000);
+    renderDisplay();
+    if (timerLeft === 0) onComplete();
+  }
+
+  function onComplete() {
+    const worked = timerTotal;
+    doPause();
+    prefillLog(mode === 'pomodoro' ? pomoWork * 60 : worked);
+    if (mode === 'pomodoro') {
+      if (pomoPhase === 'work') { pomoPhase = 'break'; timerTotal = pomoBreak * 60; }
+      else { pomoPhase = 'work'; pomoRound++; timerTotal = pomoWork * 60; }
+      timerLeft = timerTotal; pausedMs = 0;
+      renderDisplay();
+    } else {
+      phaseEl.textContent = 'Done!';
+    }
+  }
+
+  function doStart() {
+    if (running) return;
+    if (mode === 'countdown' && timerLeft <= 0) {
+      const h = parseInt(document.getElementById('cdH').value) || 0;
+      const m = parseInt(document.getElementById('cdM').value) || 0;
+      const s = parseInt(document.getElementById('cdS').value) || 0;
+      timerTotal = h * 3600 + m * 60 + s;
+      timerLeft  = timerTotal; pausedMs = 0;
+      if (timerTotal === 0) return;
+    }
+    running = true; startedAt = Date.now();
+    ticker = setInterval(tick, 200);
+    renderDisplay();
+  }
+
+  function doPause() {
+    if (!running) return;
+    clearInterval(ticker); ticker = null;
+    running = false; pausedMs = elapsedMs();
+    renderDisplay();
+  }
+
+  function doReset() {
+    clearInterval(ticker); ticker = null;
+    running = false; pausedMs = 0; swLaps = []; lapListEl.innerHTML = '';
+    if (mode === 'pomodoro') {
+      pomoPhase = 'work'; pomoRound = 1;
+      timerTotal = pomoWork * 60; timerLeft = timerTotal;
+    } else if (mode === 'countdown') {
+      const h = parseInt(document.getElementById('cdH').value) || 0;
+      const m = parseInt(document.getElementById('cdM').value) || 0;
+      const s = parseInt(document.getElementById('cdS').value) || 0;
+      timerTotal = h * 3600 + m * 60 + s; timerLeft = timerTotal;
+    } else {
+      timerTotal = 0; timerLeft = 0;
+    }
+    renderDisplay();
+  }
+
+  startBtn.addEventListener('click', () => { if (running) doPause(); else doStart(); });
+  resetBtn.addEventListener('click', doReset);
+  lapBtn.addEventListener('click', () => {
+    const now = elapsedMs();
+    const prev = swLaps.length ? swLaps[swLaps.length - 1].total : 0;
+    swLaps.push({ total: now, lap: now - prev });
+    renderLaps();
+  });
+
+  function renderLaps() {
+    lapListEl.innerHTML = '';
+    [...swLaps].reverse().forEach((l, ri) => {
+      const n = swLaps.length - ri;
+      const li = document.createElement('li');
+      li.className = 'f-lap-item' + (ri === 0 ? ' latest' : '');
+      li.innerHTML = '<span>Lap ' + n + '</span><span>' + fmtMs(l.lap) + '</span>';
+      lapListEl.appendChild(li);
+    });
+  }
+
+  // ── Mode switching ────────────────────────────────────────────
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll('.f-mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
+    cycleOpts.style.display = m === 'pomodoro'  ? '' : 'none';
+    cdRow.style.display     = m === 'countdown' ? '' : 'none';
+    lapBtn.style.display    = m === 'stopwatch' ? '' : 'none';
+    doReset();
+  }
+
+  document.getElementById('fModeTabs').querySelectorAll('.f-mode-tab').forEach(t =>
+    t.addEventListener('click', () => setMode(t.dataset.mode)));
+
+  cycleOpts.querySelectorAll('.f-cycle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      cycleOpts.querySelectorAll('.f-cycle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const parts = btn.dataset.cycle.split('-').map(Number);
+      pomoWork = parts[0]; pomoBreak = parts[1];
+      doReset();
+    });
+  });
+
+  ['cdH', 'cdM', 'cdS'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => { if (!running) doReset(); });
+  });
+
+  // ── Categories ────────────────────────────────────────────────
+  let pickedColor = PALETTE[0];
+
+  function buildSwatches() {
+    const wrap = document.getElementById('fSwatches');
+    wrap.innerHTML = '';
+    PALETTE.forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'f-swatch' + (c === pickedColor ? ' sel' : '');
+      el.style.background = c; el.dataset.c = c;
+      el.addEventListener('click', () => {
+        pickedColor = c;
+        wrap.querySelectorAll('.f-swatch').forEach(s => s.classList.toggle('sel', s.dataset.c === c));
+      });
+      wrap.appendChild(el);
+    });
+  }
+
+  function refreshCatSelect() {
+    const sel = document.getElementById('fCatSelect');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— Pick a category —</option>';
+    getCats().forEach(cat => {
+      const o = document.createElement('option');
+      o.value = cat.id; o.textContent = cat.name;
+      sel.appendChild(o);
+    });
+    if (cur) sel.value = cur;
+  }
+
+  const catForm    = document.getElementById('fCatForm');
+  const catNewBtn  = document.getElementById('fCatNewBtn');
+  const catNameEl  = document.getElementById('fCatName');
+  const saveCatBtn = document.getElementById('fSaveCatBtn');
+
+  catNewBtn.addEventListener('click', () => {
+    const open = catForm.style.display !== 'none';
+    catForm.style.display = open ? 'none' : '';
+    catNewBtn.classList.toggle('open', !open);
+    if (!open) { buildSwatches(); catNameEl.focus(); }
+  });
+
+  function saveCategory() {
+    const name = catNameEl.value.trim();
+    if (!name) { catNameEl.focus(); return; }
+    const cats = getCats();
+    const id = 'cat_' + Date.now();
+    cats.push({ id, name, color: pickedColor });
+    saveCats(cats);
+    catForm.style.display = 'none';
+    catNewBtn.classList.remove('open');
+    catNameEl.value = '';
+    refreshCatSelect();
+    document.getElementById('fCatSelect').value = id;
+    drawCharts();
+  }
+
+  saveCatBtn.addEventListener('click', saveCategory);
+  catNameEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); saveCategory(); }
+    if (e.key === 'Escape') { catForm.style.display = 'none'; catNewBtn.classList.remove('open'); }
+  });
+
+  // ── Session logging ───────────────────────────────────────────
+  function prefillLog(totalSeconds) {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = Math.floor(totalSeconds % 60);
+    document.getElementById('logH').value = h;
+    document.getElementById('logM').value = m;
+    document.getElementById('logS').value = s;
+  }
+
+  document.getElementById('fLogBtn').addEventListener('click', () => {
+    const errEl = document.getElementById('fLogErr');
+    const catId = document.getElementById('fCatSelect').value;
+    if (!catId) { errEl.textContent = 'Pick a category first.'; return; }
+    const h = parseInt(document.getElementById('logH').value) || 0;
+    const m = parseInt(document.getElementById('logM').value) || 0;
+    const s = parseInt(document.getElementById('logS').value) || 0;
+    const dur = h * 3600 + m * 60 + s;
+    if (dur === 0) { errEl.textContent = 'Set a duration greater than zero.'; return; }
+    errEl.textContent = '';
+    const sess = getSess();
+    sess.push({ id: 'sess_' + Date.now(), categoryId: catId, durationSeconds: dur, at: new Date().toISOString() });
+    saveSess(sess);
+    document.getElementById('logH').value = 0;
+    document.getElementById('logM').value = 0;
+    document.getElementById('logS').value = 0;
+    drawCharts();
+    const btn = document.getElementById('fLogBtn');
+    btn.textContent = '✓ Saved';
+    setTimeout(() => { btn.textContent = 'Save Session'; }, 1400);
+  });
+
+  // ── Period ────────────────────────────────────────────────────
+  let period = 'today';
+
+  document.getElementById('fPeriodTabs').querySelectorAll('.f-period-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.f-period-tab').forEach(b => b.classList.remove('active'));
+      t.classList.add('active'); period = t.dataset.period; drawCharts();
+    });
+  });
+
+  function periodCutoff(p) {
+    const n = new Date();
+    if (p === 'today')  return new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+    if (p === '7d')     return Date.now() - 7 * 86400000;
+    if (p === 'month')  return new Date(n.getFullYear(), n.getMonth(), 1).getTime();
+    return new Date(n.getFullYear(), 0, 1).getTime();
+  }
+
+  function aggregate(p) {
+    const cats = getCats(), sess = getSess(), since = periodCutoff(p);
+    const byId = {};
+    sess.forEach(s => {
+      if (new Date(s.at).getTime() < since) return;
+      byId[s.categoryId] = (byId[s.categoryId] || 0) + s.durationSeconds;
+    });
+    return cats.map(c => ({ ...c, secs: byId[c.id] || 0 })).filter(c => c.secs > 0);
+  }
+
+  // ── Charts ────────────────────────────────────────────────────
+  function setupCanvas(id, H) {
+    const canvas = document.getElementById(id);
+    const W = (canvas.parentElement.clientWidth || 160) - 20;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.height = H + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+    return { ctx, W, H };
+  }
+
+  function drawBar(data) {
+    const { ctx, W, H } = setupCanvas('fBarCanvas', 148);
+    if (!data.length) {
+      ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('No data yet', W / 2, H / 2); return;
+    }
+    const pL = 4, pR = 4, pT = 18, pB = 26;
+    const aW = W - pL - pR, aH = H - pT - pB;
+    const n = data.length;
+    const gap = Math.min(8, aW / n * 0.2);
+    const bW  = (aW - gap * (n - 1)) / n;
+    const maxS = Math.max(...data.map(d => d.secs));
+
+    data.forEach((d, i) => {
+      const bH = maxS > 0 ? (d.secs / maxS) * aH : 0;
+      const x = pL + i * (bW + gap), y = pT + aH - bH;
+      const r = Math.min(4, bW / 2, Math.max(0, bH));
+      ctx.fillStyle = d.color;
+      ctx.beginPath();
+      if (bH >= r * 2) {
+        ctx.moveTo(x + r, y); ctx.lineTo(x + bW - r, y);
+        ctx.arcTo(x + bW, y, x + bW, y + r, r);
+        ctx.lineTo(x + bW, y + bH); ctx.lineTo(x, y + bH);
+        ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+      } else {
+        ctx.rect(x, y, bW, Math.max(2, bH));
+      }
+      ctx.fill();
+      // category label
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(d.name.length > 5 ? d.name.slice(0, 4) + '…' : d.name, x + bW / 2, H - pB + 10);
+      // value above bar
+      if (bH > 4) {
+        ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '8px sans-serif';
+        ctx.fillText(durStr(d.secs), x + bW / 2, y - 3);
+      }
+    });
+  }
+
+  function drawDonut(data) {
+    const { ctx, W, H } = setupCanvas('fDonutCanvas', 148);
+    const cx = W / 2, cy = H / 2;
+    const outer = Math.min(cx, cy) - 6;
+    const inner = outer * 0.56;
+    const mid = (outer + inner) / 2, lw = outer - inner;
+
+    if (!data.length) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = lw;
+      ctx.beginPath(); ctx.arc(cx, cy, mid, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('No data', cx, cy); return;
+    }
+
+    const total = data.reduce((s, d) => s + d.secs, 0);
+    const GAP = data.length > 1 ? 0.035 : 0;
+    let a = -Math.PI / 2;
+    ctx.lineWidth = lw;
+    data.forEach(d => {
+      const sweep = (d.secs / total) * Math.PI * 2 - GAP;
+      if (sweep > 0) {
+        ctx.strokeStyle = d.color;
+        ctx.beginPath(); ctx.arc(cx, cy, mid, a + GAP / 2, a + GAP / 2 + sweep); ctx.stroke();
+      }
+      a += (d.secs / total) * Math.PI * 2;
+    });
+
+    // Center text
+    const valStr = durStr(total);
+    ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(valStr, cx, cy - 7);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '9px sans-serif';
+    ctx.fillText('total', cx, cy + 8);
+  }
+
+  function drawLegend(data) {
+    const el = document.getElementById('fLegend');
+    el.innerHTML = '';
+    if (!data.length) {
+      el.innerHTML = '<div class="f-no-data">No sessions logged yet — complete a timer or log a session above.</div>';
+      return;
+    }
+    data.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'f-legend-item';
+      item.innerHTML = '<span class="f-legend-dot" style="background:' + d.color + '"></span>'
+        + d.name + '&ensp;<span class="f-legend-val">' + durStr(d.secs) + '</span>';
+      el.appendChild(item);
+    });
+  }
+
+  function drawCharts() {
+    const data = aggregate(period);
+    drawBar(data); drawDonut(data); drawLegend(data);
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  refreshCatSelect();
+  buildSwatches();
+  setMode('pomodoro');
+  requestAnimationFrame(drawCharts);
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(() => requestAnimationFrame(drawCharts))
+      .observe(document.querySelector('main'));
+  }
+
+  window.addEventListener('load', () => {
+    if (window.initCloudSync) {
+      initCloudSync({
+        appKey: 'focus',
+        syncedKeys: [K_CATS, K_SESS],
+        onApplied() { refreshCatSelect(); drawCharts(); }
+      });
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
