@@ -181,24 +181,111 @@ main {
 }
 .f-save-cat:hover { background: rgba(255,255,255,0.10); }
 
-/* ── Manual log card ── */
-.f-sub-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text-tertiary); margin-bottom: 5px;
-}
-.f-dt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 12px; }
-.f-dt-group { display: flex; flex-direction: column; }
-.f-dt-input {
-  padding: 9px 10px; outline: none;
+/* ── Apple-style calendar date picker ── */
+.mc-field { margin-bottom: 8px; }
+.mc-btn {
+  width: 100%; padding: 11px 14px; text-align: left;
   background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong);
-  border-radius: 10px; color: var(--text-primary); font-family: var(--font); font-size: 12px;
-  color-scheme: dark; width: 100%; transition: border-color 0.15s;
+  border-radius: 12px; font-family: var(--font); cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: background 0.15s; -webkit-tap-highlight-color: transparent;
 }
-.f-dt-input:focus { border-color: rgba(255,255,255,0.22); }
+.mc-btn:hover { background: rgba(255,255,255,0.09); }
+.mc-btn-inner { display: flex; flex-direction: column; gap: 1px; }
+.mc-btn-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.10em;
+  text-transform: uppercase; color: var(--text-tertiary);
+}
+.mc-btn-val { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+.mc-btn-chevron {
+  color: var(--text-tertiary); font-size: 11px; transition: transform 0.2s ease;
+  flex-shrink: 0; margin-left: 8px;
+}
+.mc-btn.open .mc-btn-chevron { transform: rotate(180deg); }
+
+.mc-panel {
+  background: rgba(18,19,21,0.98); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 14px 12px 12px;
+  margin-bottom: 8px; overflow: hidden;
+  box-shadow: 0 16px 56px rgba(0,0,0,0.65), 0 2px 10px rgba(0,0,0,0.4);
+  animation: mc-drop 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes mc-drop {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Month header */
+.mc-hdr {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+}
+.mc-nav-btn {
+  width: 30px; height: 30px; border: none;
+  background: rgba(255,255,255,0.08); border-radius: 50%;
+  color: var(--text-secondary); font-size: 15px; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, opacity 0.12s; -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+}
+.mc-nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.15); }
+.mc-nav-btn:disabled { opacity: 0.18; cursor: default; }
+.mc-month-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+
+/* Day grid */
+.mc-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  text-align: center; margin-bottom: 4px;
+}
+.mc-wd {
+  font-size: 10px; font-weight: 600; color: var(--text-tertiary);
+  letter-spacing: 0.03em; padding: 2px 0;
+}
+.mc-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.mc-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  border-radius: 50%; cursor: pointer; position: relative;
+  transition: background 0.1s, color 0.1s;
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.mc-day:hover:not(.mc-other) { background: rgba(255,255,255,0.11); color: var(--text-primary); }
+.mc-day.today { color: #6BE3A4; font-weight: 700; }
+.mc-day.today::after {
+  content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+  width: 3px; height: 3px; border-radius: 50%; background: #6BE3A4;
+}
+.mc-day.sel {
+  background: #6BE3A4 !important; color: #050506 !important; font-weight: 800;
+}
+.mc-day.sel.today::after { display: none; }
+.mc-other { opacity: 0.18; cursor: default; pointer-events: none; }
+
+/* Time picker inside calendar */
+.mc-time-row {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  margin-top: 13px; padding-top: 13px; border-top: 1px solid var(--border);
+}
+.mc-time-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.mc-time-num {
+  width: 56px; padding: 8px 0; text-align: center; outline: none;
+  background: rgba(255,255,255,0.07); border: 1px solid var(--border-strong);
+  border-radius: 10px; color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+  -moz-appearance: textfield; transition: border-color 0.15s; cursor: ns-resize;
+}
+.mc-time-num::-webkit-outer-spin-button,
+.mc-time-num::-webkit-inner-spin-button { -webkit-appearance: none; }
+.mc-time-num:focus { border-color: rgba(255,255,255,0.26); cursor: text; }
+.mc-time-unit {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  color: var(--text-tertiary); letter-spacing: 0.07em;
+}
+.mc-time-sep { font-size: 22px; font-weight: 700; color: var(--text-tertiary); padding-bottom: 18px; }
+
+/* ── Manual log card ── */
 .f-man-dur {
   font-family: var(--font-mono); font-size: 30px; font-weight: 700;
   color: var(--text-primary); text-align: center; letter-spacing: -1px;
-  margin: 4px 0 14px; min-height: 38px;
+  margin: 2px 0 14px; min-height: 38px;
 }
 .f-man-dur.empty { color: var(--text-tertiary); font-size: 22px; font-weight: 400; letter-spacing: 0; }
 .f-log-err { font-size: 12px; color: #FF8A8A; min-height: 16px; margin-bottom: 8px; }
@@ -280,7 +367,7 @@ canvas { display: block; width: 100%; }
     <ul class="f-lap-list" id="fLapList"></ul>
   </div>
 
-  <!-- Timer log card: auto-saves when category is picked after a session completes -->
+  <!-- Timer log card -->
   <div class="f-card">
     <div class="f-card-title">Log Session</div>
     <div class="f-pending" id="fPending">
@@ -314,16 +401,9 @@ canvas { display: block; width: 100%; }
       <div class="f-swatches" id="fManSwatches"></div>
       <button class="f-save-cat" id="fManSaveCatBtn">Save Category</button>
     </div>
-    <div class="f-dt-row">
-      <div class="f-dt-group">
-        <div class="f-sub-label">Started</div>
-        <input type="datetime-local" class="f-dt-input" id="manStart">
-      </div>
-      <div class="f-dt-group">
-        <div class="f-sub-label">Stopped</div>
-        <input type="datetime-local" class="f-dt-input" id="manEnd">
-      </div>
-    </div>
+    <!-- Calendar pickers injected by JS -->
+    <div id="manStartWrap"></div>
+    <div id="manEndWrap"></div>
     <div class="f-man-dur empty" id="fManDur">—</div>
     <div class="f-log-err" id="fManErr"></div>
     <button class="f-log-btn" id="fManLogBtn">Save Past Session</button>
@@ -369,14 +449,12 @@ canvas { display: block; width: 100%; }
   function saveCats(d) { try { localStorage.setItem(K_CATS, JSON.stringify(d)); } catch {} }
   function saveSess(d) { try { localStorage.setItem(K_SESS, JSON.stringify(d)); } catch {} }
 
-  // ── Completion chime (Web Audio API) ─────────────────────────
+  // ── Completion chime ──────────────────────────────────────────
   function playChime() {
     try {
       const ac = new (window.AudioContext || window.webkitAudioContext)();
-      // Three ascending notes: C5 → E5 → G5, spaced 180 ms apart
       [523.25, 659.25, 783.99].forEach((freq, i) => {
-        const osc  = ac.createOscillator();
-        const gain = ac.createGain();
+        const osc = ac.createOscillator(), gain = ac.createGain();
         osc.connect(gain); gain.connect(ac.destination);
         osc.type = 'sine'; osc.frequency.value = freq;
         const t = ac.currentTime + i * 0.18;
@@ -400,9 +478,7 @@ canvas { display: block; width: 100%; }
   let pausedMs   = 0;
   let swLaps     = [];
   let ticker     = null;
-
-  // Pending session: set when a timer completes, cleared after logging
-  let pendingSession = null; // { durationSeconds, at }
+  let pendingSession = null;
 
   const displayEl = document.getElementById('fDisplay');
   const phaseEl   = document.getElementById('fPhase');
@@ -424,9 +500,7 @@ canvas { display: block; width: 100%; }
   function durStr(s) { return s >= 3600 ? (s / 3600).toFixed(1) + 'h' : Math.round(s / 60) + 'm'; }
 
   // ── Timer core ────────────────────────────────────────────────
-  function elapsedMs() {
-    return pausedMs + (running ? Date.now() - startedAt : 0);
-  }
+  function elapsedMs() { return pausedMs + (running ? Date.now() - startedAt : 0); }
 
   function renderDisplay() {
     if (mode === 'stopwatch') {
@@ -454,7 +528,6 @@ canvas { display: block; width: 100%; }
     const worked = timerTotal;
     doPause();
     playChime();
-    // Store pending session so the category picker can auto-save it
     pendingSession = { durationSeconds: Math.round(worked), at: new Date().toISOString() };
     renderPending();
     if (mode === 'pomodoro') {
@@ -654,92 +727,247 @@ canvas { display: block; width: 100%; }
     if (e.key === 'Escape') { manCatForm.style.display = 'none'; manCatNewBtn.classList.remove('open'); }
   });
 
-  // ── Auto-log when category is selected (timer flow) ───────────
+  // ── Auto-log on category select (timer flow) ──────────────────
   document.getElementById('fCatSelect').addEventListener('change', () => {
     const catId = document.getElementById('fCatSelect').value;
     if (!catId || !pendingSession) return;
-
     const sess = getSess();
-    sess.push({
-      id: 'sess_' + Date.now(),
-      categoryId: catId,
-      durationSeconds: pendingSession.durationSeconds,
-      at: pendingSession.at
-    });
+    sess.push({ id: 'sess_' + Date.now(), categoryId: catId,
+      durationSeconds: pendingSession.durationSeconds, at: pendingSession.at });
     saveSess(sess);
-
     const catName = (getCats().find(c => c.id === catId) || {}).name || 'category';
     const okEl = document.getElementById('fLogOk');
     okEl.textContent = '✓ Saved ' + fmtS(pendingSession.durationSeconds) + ' to ' + catName;
-    pendingSession = null;
-    renderPending();
-    drawCharts();
-
+    pendingSession = null; renderPending(); drawCharts();
     setTimeout(() => { okEl.textContent = ''; }, 2500);
   });
 
-  // ── Manual past-session log ───────────────────────────────────
-  function toInputValue(d) {
-    // datetime-local needs local ISO string without seconds
-    const off   = d.getTimezoneOffset();
-    const local = new Date(d.getTime() - off * 60000);
-    return local.toISOString().slice(0, 16);
+  // ── Apple-style calendar picker factory ───────────────────────
+  const MONTH_NAMES  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const WEEK_DAYS    = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const THIS_YEAR    = new Date().getFullYear();
+
+  // Track all open panels so we can close others
+  const allPickers = [];
+
+  function makeCalPicker(containerEl, labelText, initDate, onChange) {
+    let sel  = new Date(initDate); sel.setSeconds(0, 0);
+    let viewM = sel.getMonth();
+
+    const todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
+
+    // ── Build DOM ──
+    const field = document.createElement('div');
+    field.className = 'mc-field';
+
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'mc-btn';
+    btn.innerHTML =
+      '<div class="mc-btn-inner">' +
+        '<div class="mc-btn-label">' + labelText + '</div>' +
+        '<div class="mc-btn-val"></div>' +
+      '</div>' +
+      '<span class="mc-btn-chevron">▾</span>';
+    const btnVal = btn.querySelector('.mc-btn-val');
+
+    const panel = document.createElement('div');
+    panel.className = 'mc-panel';
+    panel.style.display = 'none';
+
+    // Header
+    const hdr = document.createElement('div'); hdr.className = 'mc-hdr';
+    const prevBtn   = document.createElement('button'); prevBtn.type='button'; prevBtn.className='mc-nav-btn'; prevBtn.textContent='‹';
+    const monthName = document.createElement('div');   monthName.className='mc-month-name';
+    const nextBtn   = document.createElement('button'); nextBtn.type='button'; nextBtn.className='mc-nav-btn'; nextBtn.textContent='›';
+    hdr.append(prevBtn, monthName, nextBtn);
+
+    // Weekday labels
+    const wdRow = document.createElement('div'); wdRow.className = 'mc-weekdays';
+    WEEK_DAYS.forEach(d => { const s = document.createElement('div'); s.className='mc-wd'; s.textContent=d; wdRow.appendChild(s); });
+
+    // Days grid
+    const daysGrid = document.createElement('div'); daysGrid.className = 'mc-days';
+
+    // Time row
+    const timeRow = document.createElement('div'); timeRow.className = 'mc-time-row';
+
+    const hCell = document.createElement('div'); hCell.className = 'mc-time-cell';
+    const hInput = document.createElement('input'); hInput.type='number'; hInput.className='mc-time-num'; hInput.min=0; hInput.max=23; hInput.value=pad(sel.getHours());
+    const hUnit  = document.createElement('div');  hUnit.className='mc-time-unit'; hUnit.textContent='hr';
+    hCell.append(hInput, hUnit);
+
+    const sep = document.createElement('div'); sep.className='mc-time-sep'; sep.textContent=':';
+
+    const mCell = document.createElement('div'); mCell.className = 'mc-time-cell';
+    const mInput = document.createElement('input'); mInput.type='number'; mInput.className='mc-time-num'; mInput.min=0; mInput.max=59; mInput.value=pad(sel.getMinutes());
+    const mUnit  = document.createElement('div');  mUnit.className='mc-time-unit'; mUnit.textContent='min';
+    mCell.append(mInput, mUnit);
+
+    timeRow.append(hCell, sep, mCell);
+    panel.append(hdr, wdRow, daysGrid, timeRow);
+    field.append(btn, panel);
+    containerEl.appendChild(field);
+
+    // ── Helpers ──
+    function daysInMonth(m) { return new Date(THIS_YEAR, m + 1, 0).getDate(); }
+
+    function getDate() {
+      const h = Math.min(23, Math.max(0, parseInt(hInput.value) || 0));
+      const m = Math.min(59, Math.max(0, parseInt(mInput.value) || 0));
+      return new Date(THIS_YEAR, sel.getMonth(), sel.getDate(), h, m, 0, 0);
+    }
+
+    function fmtBtn(d) {
+      const h = d.getHours(), m = d.getMinutes();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12  = h % 12 || 12;
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      return days[d.getDay()] + ', ' + SHORT_MONTHS[d.getMonth()] + ' ' + d.getDate()
+        + '  ·  ' + h12 + ':' + pad(m) + ' ' + ampm;
+    }
+
+    function updateBtn() { btnVal.textContent = fmtBtn(getDate()); }
+
+    function renderGrid() {
+      daysGrid.innerHTML = '';
+      prevBtn.disabled = viewM === 0;
+      nextBtn.disabled = viewM === 11;
+      monthName.textContent = MONTH_NAMES[viewM] + ' ' + THIS_YEAR;
+
+      const firstDay  = new Date(THIS_YEAR, viewM, 1).getDay();
+      const daysCount = daysInMonth(viewM);
+      const prevCount = viewM > 0 ? daysInMonth(viewM - 1) : 0;
+
+      // Leading overflow from previous month
+      for (let i = 0; i < firstDay; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'mc-day mc-other';
+        if (viewM > 0) cell.textContent = prevCount - firstDay + 1 + i;
+        daysGrid.appendChild(cell);
+      }
+
+      // Current month
+      const selM = sel.getMonth(), selD = sel.getDate();
+      for (let d = 1; d <= daysCount; d++) {
+        const cell = document.createElement('div'); cell.className = 'mc-day';
+        cell.textContent = d;
+        const cellDate = new Date(THIS_YEAR, viewM, d); cellDate.setHours(0,0,0,0);
+        if (+cellDate === +todayMidnight) cell.classList.add('today');
+        if (viewM === selM && d === selD) cell.classList.add('sel');
+        cell.addEventListener('click', () => {
+          sel = new Date(THIS_YEAR, viewM, d, parseInt(hInput.value)||0, parseInt(mInput.value)||0, 0, 0);
+          renderGrid(); updateBtn(); onChange(getDate());
+        });
+        daysGrid.appendChild(cell);
+      }
+
+      // Trailing overflow to next month (fill to 42 cells)
+      const trailing = 42 - (firstDay + daysCount);
+      for (let i = 1; i <= trailing; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'mc-day mc-other';
+        if (viewM < 11) cell.textContent = i;
+        daysGrid.appendChild(cell);
+      }
+    }
+
+    function open()  { panel.style.display = ''; btn.classList.add('open'); viewM = sel.getMonth(); renderGrid(); }
+    function close() { panel.style.display = 'none'; btn.classList.remove('open'); }
+    function toggle() { panel.style.display === 'none' ? open() : close(); }
+
+    // ── Events ──
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Close sibling pickers
+      allPickers.forEach(p => { if (p !== api) p.close(); });
+      toggle();
+    });
+
+    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); if (viewM > 0) { viewM--; renderGrid(); } });
+    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); if (viewM < 11) { viewM++; renderGrid(); } });
+
+    [hInput, mInput].forEach(inp => {
+      const max = inp === hInput ? 23 : 59;
+      inp.addEventListener('change', () => {
+        let v = parseInt(inp.value);
+        if (isNaN(v)) v = 0;
+        inp.value = pad(Math.min(max, Math.max(0, v)));
+        updateBtn(); onChange(getDate());
+      });
+      inp.addEventListener('wheel', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        let v = parseInt(inp.value) + (e.deltaY < 0 ? 1 : -1);
+        inp.value = pad(Math.min(max, Math.max(0, v)));
+        updateBtn(); onChange(getDate());
+      }, { passive: false });
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          let v = parseInt(inp.value) + (e.key === 'ArrowUp' ? 1 : -1);
+          inp.value = pad(Math.min(max, Math.max(0, v)));
+          updateBtn(); onChange(getDate());
+        }
+      });
+    });
+
+    // ── API ──
+    const api = {
+      getDate,
+      setDate(d) {
+        sel = new Date(d); sel.setSeconds(0, 0);
+        viewM = sel.getMonth();
+        hInput.value = pad(sel.getHours());
+        mInput.value = pad(sel.getMinutes());
+        updateBtn();
+      },
+      close
+    };
+
+    updateBtn();
+    allPickers.push(api);
+    return api;
   }
 
-  function initManDates() {
-    const now   = new Date();
-    const start = new Date(now.getTime() - 3600000); // 1 h ago
-    document.getElementById('manStart').value = toInputValue(start);
-    document.getElementById('manEnd').value   = toInputValue(now);
-    updateManDur();
-  }
+  // Close all pickers on outside click
+  document.addEventListener('click', () => { allPickers.forEach(p => p.close()); });
+
+  // ── Manual past-session log ───────────────────────────────────
+  const now0      = new Date();
+  const startInit = new Date(now0.getTime() - 3600000);
+
+  const manStartPicker = makeCalPicker(document.getElementById('manStartWrap'), 'Started', startInit, updateManDur);
+  const manEndPicker   = makeCalPicker(document.getElementById('manEndWrap'),   'Stopped', now0,      updateManDur);
 
   function updateManDur() {
-    const s = new Date(document.getElementById('manStart').value);
-    const e = new Date(document.getElementById('manEnd').value);
+    const s = manStartPicker.getDate(), e = manEndPicker.getDate();
     const el = document.getElementById('fManDur');
-    if (!isNaN(s) && !isNaN(e) && e > s) {
-      const secs = Math.round((e - s) / 1000);
-      el.textContent = fmtS(secs);
+    if (e > s) {
+      el.textContent = fmtS(Math.round((e - s) / 1000));
       el.classList.remove('empty');
     } else {
-      el.textContent = '—';
-      el.classList.add('empty');
+      el.textContent = '—'; el.classList.add('empty');
     }
   }
-
-  document.getElementById('manStart').addEventListener('change', updateManDur);
-  document.getElementById('manEnd').addEventListener('change', updateManDur);
 
   document.getElementById('fManLogBtn').addEventListener('click', () => {
     const errEl = document.getElementById('fManErr');
     const catId = document.getElementById('fManCatSelect').value;
     if (!catId) { errEl.textContent = 'Pick a category first.'; return; }
-
-    const s = new Date(document.getElementById('manStart').value);
-    const e = new Date(document.getElementById('manEnd').value);
-    if (isNaN(s) || isNaN(e)) { errEl.textContent = 'Set a valid start and stop time.'; return; }
+    const s = manStartPicker.getDate(), e = manEndPicker.getDate();
     if (e <= s) { errEl.textContent = 'Stop time must be after start time.'; return; }
-
-    const dur = Math.round((e - s) / 1000);
     errEl.textContent = '';
-
+    const dur = Math.round((e - s) / 1000);
     const sess = getSess();
-    sess.push({
-      id: 'sess_' + Date.now(),
-      categoryId: catId,
-      durationSeconds: dur,
-      at: s.toISOString()   // attribute to start time
-    });
-    saveSess(sess);
-    drawCharts();
-
+    sess.push({ id: 'sess_' + Date.now(), categoryId: catId, durationSeconds: dur, at: s.toISOString() });
+    saveSess(sess); drawCharts();
     const btn = document.getElementById('fManLogBtn');
     btn.textContent = '✓ Saved';
     setTimeout(() => { btn.textContent = 'Save Past Session'; }, 1400);
-
-    // Reset to current time window
-    initManDates();
+    const newNow = new Date();
+    manStartPicker.setDate(new Date(newNow.getTime() - 3600000));
+    manEndPicker.setDate(newNow);
+    updateManDur();
   });
 
   // ── Period / Analytics ────────────────────────────────────────
@@ -778,8 +1006,7 @@ canvas { display: block; width: 100%; }
     canvas.width = W * dpr; canvas.height = H * dpr;
     canvas.style.height = H + 'px';
     const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, W, H);
+    ctx.scale(dpr, dpr); ctx.clearRect(0, 0, W, H);
     return { ctx, W, H };
   }
 
@@ -792,25 +1019,20 @@ canvas { display: block; width: 100%; }
     }
     const pL = 4, pR = 4, pT = 18, pB = 26;
     const aW = W - pL - pR, aH = H - pT - pB;
-    const n = data.length;
-    const gap = Math.min(8, aW / n * 0.2);
-    const bW  = (aW - gap * (n - 1)) / n;
+    const n = data.length, gap = Math.min(8, aW / n * 0.2);
+    const bW = (aW - gap * (n - 1)) / n;
     const maxS = Math.max(...data.map(d => d.secs));
-
     data.forEach((d, i) => {
       const bH = maxS > 0 ? (d.secs / maxS) * aH : 0;
       const x = pL + i * (bW + gap), y = pT + aH - bH;
       const r = Math.min(4, bW / 2, Math.max(0, bH));
-      ctx.fillStyle = d.color;
-      ctx.beginPath();
+      ctx.fillStyle = d.color; ctx.beginPath();
       if (bH >= r * 2) {
         ctx.moveTo(x + r, y); ctx.lineTo(x + bW - r, y);
         ctx.arcTo(x + bW, y, x + bW, y + r, r);
         ctx.lineTo(x + bW, y + bH); ctx.lineTo(x, y + bH);
         ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
-      } else {
-        ctx.rect(x, y, bW, Math.max(2, bH));
-      }
+      } else { ctx.rect(x, y, bW, Math.max(2, bH)); }
       ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(d.name.length > 5 ? d.name.slice(0, 4) + '…' : d.name, x + bW / 2, H - pB + 10);
@@ -824,10 +1046,8 @@ canvas { display: block; width: 100%; }
   function drawDonut(data) {
     const { ctx, W, H } = setupCanvas('fDonutCanvas', 148);
     const cx = W / 2, cy = H / 2;
-    const outer = Math.min(cx, cy) - 6;
-    const inner = outer * 0.56;
+    const outer = Math.min(cx, cy) - 6, inner = outer * 0.56;
     const mid = (outer + inner) / 2, lw = outer - inner;
-
     if (!data.length) {
       ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = lw;
       ctx.beginPath(); ctx.arc(cx, cy, mid, 0, Math.PI * 2); ctx.stroke();
@@ -835,11 +1055,9 @@ canvas { display: block; width: 100%; }
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText('No data', cx, cy); return;
     }
-
     const total = data.reduce((s, d) => s + d.secs, 0);
     const GAP = data.length > 1 ? 0.035 : 0;
-    let a = -Math.PI / 2;
-    ctx.lineWidth = lw;
+    let a = -Math.PI / 2; ctx.lineWidth = lw;
     data.forEach(d => {
       const sweep = (d.secs / total) * Math.PI * 2 - GAP;
       if (sweep > 0) {
@@ -848,7 +1066,6 @@ canvas { display: block; width: 100%; }
       }
       a += (d.secs / total) * Math.PI * 2;
     });
-
     ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(durStr(total), cx, cy - 7);
@@ -857,14 +1074,10 @@ canvas { display: block; width: 100%; }
   }
 
   function drawLegend(data) {
-    const el = document.getElementById('fLegend');
-    el.innerHTML = '';
-    if (!data.length) {
-      el.innerHTML = '<div class="f-no-data">No sessions logged yet.</div>'; return;
-    }
+    const el = document.getElementById('fLegend'); el.innerHTML = '';
+    if (!data.length) { el.innerHTML = '<div class="f-no-data">No sessions logged yet.</div>'; return; }
     data.forEach(d => {
-      const item = document.createElement('div');
-      item.className = 'f-legend-item';
+      const item = document.createElement('div'); item.className = 'f-legend-item';
       item.innerHTML = '<span class="f-legend-dot" style="background:' + d.color + '"></span>'
         + d.name + '&ensp;<span class="f-legend-val">' + durStr(d.secs) + '</span>';
       el.appendChild(item);
@@ -882,7 +1095,7 @@ canvas { display: block; width: 100%; }
   buildSwatches('fManSwatches', manPickedColor, c => { manPickedColor = c; });
   setMode('pomodoro');
   renderPending();
-  initManDates();
+  updateManDur();
   requestAnimationFrame(drawCharts);
 
   if (window.ResizeObserver) {
