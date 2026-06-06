@@ -96,8 +96,10 @@ body::after {
   flex-direction: column;
   padding: 16px 18px;
   border-radius: 18px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
+  background:
+    radial-gradient(ellipse 80% 70% at 80% 10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 65%),
+    rgba(255,255,255,0.035);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, rgba(255,255,255,0.06));
   backdrop-filter: blur(24px) saturate(1.2);
   -webkit-backdrop-filter: blur(24px) saturate(1.2);
   box-shadow: var(--glass-shadow);
@@ -119,8 +121,8 @@ body::after {
 
 .tile:hover {
   transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
-  box-shadow: var(--glass-shadow), 0 0 24px color-mix(in srgb, var(--accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: var(--glass-shadow), 0 0 32px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .tile:hover .tile-arrow { transform: translateX(4px); }
