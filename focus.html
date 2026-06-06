@@ -663,6 +663,7 @@ main {
   <div class="sess-header">
     <div class="card-title" style="margin-bottom:0">Past Sessions</div>
     <div style="display:flex;gap:6px;align-items:center">
+      <button class="sess-icon-btn" id="sessAddBtn" title="Add session" style="font-size:20px;font-weight:300;line-height:1;padding-bottom:2px">+</button>
       <button class="sess-icon-btn" id="sessEditBtn" style="display:none" title="Delete sessions">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/><path d="M10 4l2 2"/></svg>
       </button>
@@ -1509,6 +1510,26 @@ function openEditSession(s){
   document.getElementById('editOverlay').classList.add('open');
 }
 
+function openNewSession(){
+  _editSessId=null;
+  const now=new Date();
+  _calY=now.getFullYear(); _calM=now.getMonth(); _calD=now.getDate();
+  _initEditDrums();
+  let sh=now.getHours(), sm=now.getMinutes();
+  _startAp=sh>=12?'PM':'AM'; sh=sh%12||12;
+  _startHrD.setIdx(sh-1); _startMinD.setIdx(sm);
+  const end=new Date(now.getTime()+3600000);
+  let eh=end.getHours(), em=end.getMinutes();
+  _endAp=eh>=12?'PM':'AM'; eh=eh%12||12;
+  _endHrD.setIdx(eh-1); _endMinD.setIdx(em);
+  _syncAmPm();
+  _renderCal();
+  document.querySelector('.edit-title-row').textContent='Add Session';
+  document.getElementById('editSaveBtn').textContent='Add Session';
+  document.getElementById('editOverlay').classList.add('open');
+}
+document.getElementById('sessAddBtn').addEventListener('click', openNewSession);
+
 function _syncAmPm(){
   document.getElementById('startAmBtn').classList.toggle('active',_startAp==='AM');
   document.getElementById('startPmBtn').classList.toggle('active',_startAp==='PM');
@@ -1530,7 +1551,6 @@ document.getElementById('endAmBtn').addEventListener('click',()=>{_endAp='AM';_s
 document.getElementById('endPmBtn').addEventListener('click',()=>{_endAp='PM';_syncAmPm();});
 
 document.getElementById('editSaveBtn').addEventListener('click',()=>{
-  if(!_editSessId) return;
   const sh12=parseInt(_startHrD.getValue()), sm=parseInt(_startMinD.getValue());
   const sh24=_startAp==='AM'?(sh12===12?0:sh12):(sh12===12?12:sh12+12);
   const startDate=new Date(_calY,_calM,_calD,sh24,sm,0);
@@ -1539,8 +1559,15 @@ document.getElementById('editSaveBtn').addEventListener('click',()=>{
   let endDate=new Date(_calY,_calM,_calD,eh24,em,0);
   if(endDate<=startDate) endDate=new Date(endDate.getTime()+86400000);
   const dur=Math.max(60,Math.round((endDate-startDate)/1000));
-  saveSess(getSess().map(s=>s.id===_editSessId?{...s,at:startDate.toISOString(),durationSeconds:dur}:s));
+  if(_editSessId){
+    saveSess(getSess().map(s=>s.id===_editSessId?{...s,at:startDate.toISOString(),durationSeconds:dur}:s));
+  } else {
+    const catId=(cats.find(c=>c.id===activeCatId&&!c.archived)||cats.find(c=>!c.archived)||DEFAULT_CAT).id;
+    saveSess([...getSess(),{id:'sess_'+Date.now(),categoryId:catId,durationSeconds:dur,at:startDate.toISOString()}]);
+  }
   renderSessions(); drawCharts(); updateTodayCard();
+  document.getElementById('editSaveBtn').textContent='Save';
+  document.querySelector('.edit-title-row').textContent='Edit Session';
   document.getElementById('editOverlay').classList.remove('open'); _editSessId=null;
 });
 document.getElementById('editOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('editOverlay')) document.getElementById('editOverlay').classList.remove('open'); });
