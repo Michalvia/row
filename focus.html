@@ -1291,7 +1291,7 @@ function updateTodayCard() {
       <div style="font-size:12px;font-weight:700;color:var(--text-tertiary)">${pct}%</div>
     </div>
     <div class="today-bar-track">
-      <div class="today-bar-fill" style="width:${barW}%;background:${cat.color};box-shadow:0 0 5px ${cat.color}44"></div>
+      <div class="today-bar-fill" style="width:${barW}%;background:${cat.color};box-shadow:0 0 6px ${cat.color}"></div>
     </div>`;
     list.appendChild(row);
   });
@@ -1439,7 +1439,7 @@ function drawCharts(){
   const totalSecs=donutData.reduce((a,d)=>a+d.val,0)||1;
   donutData.forEach((d,i)=>{
     const pill=document.createElement('div'); pill.className='legend-pill'+(d.id===highlightedCatId?' highlight':'');
-    pill.innerHTML=`<div class="legend-dot" style="background:${d.color}"></div><div class="legend-name-col"><span class="legend-name">${d.name}</span><span class="legend-subtime">${fmtHm(d.val)}</span></div><span class="legend-pct">${Math.round(d.val/totalSecs*100)}%</span>`;
+    pill.innerHTML=`<div class="legend-dot" style="background:${d.color};box-shadow:0 0 6px ${d.color}"></div><div class="legend-name-col"><span class="legend-name">${d.name}</span><span class="legend-subtime">${fmtHm(d.val)}</span></div><span class="legend-pct">${Math.round(d.val/totalSecs*100)}%</span>`;
     pill.addEventListener('click',()=>{ highlightedCatId=highlightedCatId===d.id?null:d.id; animDonut(donutData,highlightedCatId?donutData.findIndex(x=>x.id===highlightedCatId):null); document.querySelectorAll('.legend-pill').forEach((p,j)=>p.classList.toggle('highlight',j===i&&!!highlightedCatId)); });
     leg.appendChild(pill);
   });
@@ -1470,9 +1470,9 @@ function renderSessions() {
     const item=document.createElement('div'); item.className='sess-item';
     if(sessEditMode){
       item.style.cursor='default';
-      item.innerHTML=`<div class="sess-bar" style="background:${cat.color}"></div><div class="sess-body"><div class="sess-cat">${cat.name}</div><div class="sess-meta">${dateStr} · ${timeStr}</div></div><div class="sess-dur">${fmtDuration(s.durationSeconds)}</div><button class="sess-del-btn" data-id="${s.id}">×</button>`;
+      item.innerHTML=`<div class="sess-bar" style="background:${cat.color};box-shadow:0 0 6px ${cat.color}"></div><div class="sess-body"><div class="sess-cat">${cat.name}</div><div class="sess-meta">${dateStr} · ${timeStr}</div></div><div class="sess-dur">${fmtDuration(s.durationSeconds)}</div><button class="sess-del-btn" data-id="${s.id}">×</button>`;
     } else {
-      item.innerHTML=`<div class="sess-bar" style="background:${cat.color}"></div><div class="sess-body"><div class="sess-cat">${cat.name}</div><div class="sess-meta">${dateStr} · ${timeStr}</div></div><div class="sess-dur">${fmtDuration(s.durationSeconds)}</div>`;
+      item.innerHTML=`<div class="sess-bar" style="background:${cat.color};box-shadow:0 0 6px ${cat.color}"></div><div class="sess-body"><div class="sess-cat">${cat.name}</div><div class="sess-meta">${dateStr} · ${timeStr}</div></div><div class="sess-dur">${fmtDuration(s.durationSeconds)}</div>`;
       item.addEventListener('click',()=>openEditSession(s));
     }
     list.appendChild(item);
