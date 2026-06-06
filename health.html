@@ -95,9 +95,22 @@ main {
   overflow: hidden;
   color-scheme: dark;
 }
+.caffeine-embed { margin-top: 56px; }
+.caffeine-iframe {
+  display: block;
+  width: 100%;
+  height: 1900px;
+  border: 0;
+  background: transparent;
+  border-radius: 16px;
+  overflow: hidden;
+  color-scheme: dark;
+}
 @media (max-width: 480px) {
   .water-embed { margin-top: 40px; }
   .water-iframe { height: 780px; }
+  .caffeine-embed { margin-top: 40px; }
+  .caffeine-iframe { height: 2200px; }
 }
 
 .stack-card {
@@ -516,6 +529,11 @@ main {
   <section id="water" class="water-embed">
     <div class="section-title">Water Tracker</div>
     <iframe src="po-water.html" class="water-iframe" loading="lazy" title="Water Tracker"></iframe>
+  </section>
+
+  <section id="caffeine" class="caffeine-embed">
+    <div class="section-title">Caffeine Tracker</div>
+    <iframe src="caffeine.html" class="caffeine-iframe" loading="lazy" title="Caffeine Tracker"></iframe>
   </section>
 
   <div class="attribution">// editable template · all data stays in your browser</div>

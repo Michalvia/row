@@ -856,10 +856,13 @@ function saveSess(s) { localStorage.setItem(K_SESS, JSON.stringify(s)); if(windo
 
 function ensureDefaults() {
   let c = getCats();
-  const hasWork = c.some(x => x.id === 'cat_work' && !x.archived);
-  if (!c.length || !hasWork) {
-    c = c.filter(x => x.id !== 'cat_work');
-    c.unshift(DEFAULT_CAT);
+  // Only restore Work if there are NO active categories at all —
+  // if the user deliberately deleted Work but has their own categories, leave them alone.
+  const hasActive = c.some(x => !x.archived);
+  if (!hasActive) {
+    const wi = c.findIndex(x => x.id === 'cat_work');
+    if (wi >= 0) c[wi] = { ...c[wi], archived: false };
+    else c.unshift({ ...DEFAULT_CAT });
     saveCats(c);
   }
   return c;

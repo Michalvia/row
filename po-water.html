@@ -879,17 +879,28 @@ html, body {
     const maxVal = Math.max(target, Math.max.apply(null, data)) || 1;
     const colW = (W - pad * 2) / data.length;
     const barW = colW * 0.7;
-    let html = '';
+    let html = '<defs>'
+      + '<linearGradient id="swGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6BE3A4" stop-opacity="0.82"/><stop offset="100%" stop-color="#6BE3A4" stop-opacity="0.07"/></linearGradient>'
+      + '<linearGradient id="swRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF6B6B" stop-opacity="0.82"/><stop offset="100%" stop-color="#FF6B6B" stop-opacity="0.07"/></linearGradient>'
+      + '<filter id="swGlow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+      + '</defs>';
     // Target line
     const targetY = H - pad - (target / maxVal) * (H - pad * 2);
     html += '<line class="spark-target" x1="0" x2="' + W + '" y1="' + targetY.toFixed(1) + '" y2="' + targetY.toFixed(1) + '"/>';
+    html += '<g filter="url(#swGlow)">';
     data.forEach((v, i) => {
       const x = pad + i * colW + (colW - barW) / 2;
-      const h = (v / maxVal) * (H - pad * 2);
+      const h = Math.max(0, (v / maxVal) * (H - pad * 2));
       const y = H - pad - h;
-      const cls = (v >= target) ? 'spark-bar' : 'spark-bar miss';
-      html += '<rect class="' + cls + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, h).toFixed(1) + '" rx="2"/>';
+      const hit = v >= target;
+      const color  = hit ? '#6BE3A4' : '#FF6B6B';
+      const gradId = hit ? 'swGreen'  : 'swRed';
+      if (h > 0) {
+        html += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="url(#' + gradId + ')" rx="2"/>';
+        html += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="2" fill="' + color + '" opacity="0.9" rx="1"/>';
+      }
     });
+    html += '</g>';
     svg.innerHTML = html;
   }
 
