@@ -860,6 +860,24 @@ body::after {
 
 </div>
 
+<div class="sched-modal-bg" id="schedModalBg" role="dialog" aria-modal="true" aria-label="Sleep schedule settings">
+  <div class="sched-modal">
+    <div class="sched-modal-title">Sleep Schedule</div>
+    <div class="sched-field">
+      <label for="schedWake">Wake up</label>
+      <input type="time" id="schedWake" step="3600">
+    </div>
+    <div class="sched-field">
+      <label for="schedSleep">Bedtime</label>
+      <input type="time" id="schedSleep" step="3600">
+    </div>
+    <div class="sched-actions">
+      <button class="sched-cancel" id="schedCancel">Cancel</button>
+      <button class="sched-save"   id="schedSave">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   'use strict';
@@ -1695,24 +1713,6 @@ body::after {
   });
 })();
 </script>
-<div class="sched-modal-bg" id="schedModalBg" role="dialog" aria-modal="true" aria-label="Sleep schedule settings">
-  <div class="sched-modal">
-    <div class="sched-modal-title">Sleep Schedule</div>
-    <div class="sched-field">
-      <label for="schedWake">Wake up</label>
-      <input type="time" id="schedWake" step="3600">
-    </div>
-    <div class="sched-field">
-      <label for="schedSleep">Bedtime</label>
-      <input type="time" id="schedSleep" step="3600">
-    </div>
-    <div class="sched-actions">
-      <button class="sched-cancel" id="schedCancel">Cancel</button>
-      <button class="sched-save"   id="schedSave">Save</button>
-    </div>
-  </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof initCloudSync !== 'function') return;
