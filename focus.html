@@ -380,18 +380,57 @@ main {
 .legend-pct { font-size: 12px; color: var(--text-tertiary); font-weight: 600; }
 
 /* ── Past Sessions ── */
+.sess-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.sess-icon-btn { width:28px; height:28px; border-radius:50%; border:none; background:rgba(255,255,255,0.07); color:var(--text-tertiary); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s; flex-shrink:0; }
+.sess-icon-btn:hover { background:rgba(255,255,255,0.13); }
+.sess-icon-btn.on { background:rgba(255,255,255,0.14); color:var(--text-primary); }
+.sess-icon-btn svg { width:14px; height:14px; pointer-events:none; }
+.chevron-svg { transition:transform 0.38s cubic-bezier(0.22,1,0.36,1); display:block; }
+.chevron-svg.flipped { transform:rotate(180deg); }
+.sess-collapsible { overflow:hidden; max-height:3000px; opacity:1; transition:max-height 0.6s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease; }
+.sess-collapsible.collapsed { max-height:0; opacity:0; }
 .sess-list { display: flex; flex-direction: column; gap: 8px; }
-.sess-item {
-  display: flex; align-items: center;
-  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-  border-radius: 12px; overflow: hidden;
-}
+.sess-item { display:flex; align-items:center; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; transition:background 0.15s; }
+.sess-item:hover { background:rgba(255,255,255,0.05); }
 .sess-bar { width: 4px; align-self: stretch; flex-shrink: 0; }
 .sess-body { flex: 1; padding: 10px 12px; }
 .sess-cat { font-size: 13px; font-weight: 700; color: var(--text-primary); }
 .sess-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
-.sess-dur { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-secondary); padding: 10px 12px; }
-.sess-empty { text-align: center; color: var(--text-tertiary); font-size: 14px; padding: 24px 0; }
+.sess-dur { font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--text-secondary); padding:10px 12px; }
+.sess-del-btn { width:26px; height:26px; border-radius:50%; border:none; background:rgba(255,80,80,0.15); color:#FF6B6B; cursor:pointer; font-size:17px; font-weight:400; flex-shrink:0; margin-right:10px; display:flex; align-items:center; justify-content:center; transition:background 0.15s; line-height:1; }
+.sess-del-btn:hover { background:rgba(255,80,80,0.3); }
+.sess-empty { text-align:center; color:var(--text-tertiary); font-size:14px; padding:24px 0; }
+/* ── Edit session overlay ── */
+.edit-overlay { position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+.edit-overlay.open { opacity:1; pointer-events:all; }
+.edit-sheet { width:100%; max-width:480px; background:#111115; border-radius:24px 24px 0 0; padding:0 0 max(24px,env(safe-area-inset-bottom)); transform:translateY(100%); transition:transform 0.38s var(--ease-spring); overflow-y:auto; max-height:92vh; }
+.edit-overlay.open .edit-sheet { transform:translateY(0); }
+.edit-inner { padding:0 18px; }
+.edit-title-row { font-size:15px; font-weight:700; color:var(--text-primary); text-align:center; padding:6px 0 10px; }
+/* ── iOS Calendar ── */
+.cal-header { display:flex; align-items:center; justify-content:space-between; padding:4px 0 8px; }
+.cal-nav { width:30px; height:30px; border:none; background:rgba(255,255,255,0.08); border-radius:50%; color:var(--text-primary); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
+.cal-nav:hover { background:rgba(255,255,255,0.15); }
+.cal-month-lbl { font-size:14px; font-weight:700; color:var(--text-primary); }
+.cal-wds { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:2px; }
+.cal-wd { font-size:10px; font-weight:600; color:var(--text-tertiary); text-align:center; padding:2px 0 4px; letter-spacing:0.03em; }
+.cal-days { display:grid; grid-template-columns:repeat(7,1fr); }
+.cal-day { height:33px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:13px; font-weight:500; color:var(--text-primary); cursor:pointer; transition:background 0.12s; margin:1px 0; }
+.cal-day:hover:not(.cal-disabled):not(.cal-sel) { background:rgba(255,255,255,0.08); }
+.cal-day.cal-sel { background:#6BE3A4; color:#000; font-weight:700; }
+.cal-day.cal-today:not(.cal-sel) { color:#6BE3A4; font-weight:700; }
+.cal-day.cal-disabled { color:rgba(255,255,255,0.2); cursor:default; pointer-events:none; }
+/* ── Edit time pickers ── */
+.edit-time-wrap { display:flex; border:1px solid var(--border); border-radius:14px; overflow:hidden; margin:12px 0 6px; }
+.edit-time-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 0 8px; }
+.edit-time-col+.edit-time-col { border-left:1px solid var(--border); }
+.edit-time-lbl { font-size:10px; font-weight:700; color:var(--text-tertiary); letter-spacing:0.07em; text-transform:uppercase; }
+.edit-drums { display:flex; align-items:center; gap:3px; }
+.edit-sheet .drum-wrap { width:50px; }
+.t-sep { font-size:18px; font-weight:700; color:var(--text-secondary); padding-bottom:2px; }
+.ampm-stack { display:flex; flex-direction:column; gap:3px; margin-left:3px; }
+.ampm-btn { padding:4px 6px; border:1px solid rgba(255,255,255,0.10); border-radius:7px; background:transparent; color:var(--text-tertiary); font-size:10px; font-weight:700; cursor:pointer; transition:all 0.15s; font-family:var(--font); letter-spacing:0.04em; }
+.ampm-btn.active { background:rgba(255,255,255,0.14); color:var(--text-primary); border-color:rgba(255,255,255,0.22); }
 
 /* ── Drum picker ── */
 .drum-overlay {
@@ -621,11 +660,61 @@ main {
 
 <!-- ── 5. Past Sessions ── -->
 <div class="card">
-  <div class="card-title">Past Sessions</div>
-  <div class="sess-list" id="sessList"></div>
+  <div class="sess-header">
+    <div class="card-title" style="margin-bottom:0">Past Sessions</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="sess-icon-btn" id="sessEditBtn" style="display:none" title="Delete sessions">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/><path d="M10 4l2 2"/></svg>
+      </button>
+      <button class="sess-icon-btn" id="sessCollapseBtn" title="Collapse">
+        <svg class="chevron-svg flipped" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="sess-collapsible" id="sessCollapsible">
+    <div class="sess-list" id="sessList"></div>
+  </div>
 </div>
 
 </main>
+
+<!-- Edit session overlay -->
+<div class="edit-overlay" id="editOverlay">
+  <div class="edit-sheet">
+    <div style="text-align:center;padding-top:12px"><div class="drum-handle" style="margin:0 auto 0"></div></div>
+    <div class="edit-inner">
+      <div class="edit-title-row">Edit Session</div>
+      <div class="cal-header">
+        <button class="cal-nav" id="calPrev">‹</button>
+        <span class="cal-month-lbl" id="calMonthLbl">June 2026</span>
+        <button class="cal-nav" id="calNext">›</button>
+      </div>
+      <div class="cal-wds" id="calWds"></div>
+      <div class="cal-days" id="calDays"></div>
+      <div class="edit-time-wrap">
+        <div class="edit-time-col">
+          <div class="edit-time-lbl">Start</div>
+          <div class="edit-drums">
+            <div class="drum-wrap" id="editStartHr"><div class="drum-fade-t"></div><div class="drum-fade-b"></div><div class="drum-sel-line top"></div><div class="drum-sel-line bot"></div></div>
+            <span class="t-sep">:</span>
+            <div class="drum-wrap" id="editStartMin"><div class="drum-fade-t"></div><div class="drum-fade-b"></div><div class="drum-sel-line top"></div><div class="drum-sel-line bot"></div></div>
+            <div class="ampm-stack"><button class="ampm-btn active" id="startAmBtn">AM</button><button class="ampm-btn" id="startPmBtn">PM</button></div>
+          </div>
+        </div>
+        <div class="edit-time-col">
+          <div class="edit-time-lbl">End</div>
+          <div class="edit-drums">
+            <div class="drum-wrap" id="editEndHr"><div class="drum-fade-t"></div><div class="drum-fade-b"></div><div class="drum-sel-line top"></div><div class="drum-sel-line bot"></div></div>
+            <span class="t-sep">:</span>
+            <div class="drum-wrap" id="editEndMin"><div class="drum-fade-t"></div><div class="drum-fade-b"></div><div class="drum-sel-line top"></div><div class="drum-sel-line bot"></div></div>
+            <div class="ampm-stack"><button class="ampm-btn active" id="endAmBtn">AM</button><button class="ampm-btn" id="endPmBtn">PM</button></div>
+          </div>
+        </div>
+      </div>
+      <button class="drum-done-btn" id="editSaveBtn" style="display:block;width:100%;margin-top:10px;border-radius:14px;box-sizing:border-box">Save</button>
+    </div>
+  </div>
+</div>
 
 <!-- Drum overlay (start time editor) -->
 <div class="drum-overlay" id="drumOverlay">
@@ -1026,7 +1115,7 @@ document.getElementById('modeSeg').addEventListener('click',e=>{
   if(timerMode==='stopwatch'){
     swElapsed=0; swStartTs=0; rp.style.strokeDashoffset=CIRC; document.getElementById('ringTime').textContent='00:00';
   } else {
-    if(timerMode==='timer'){ document.getElementById('timerDurRow').classList.remove('picker-hidden'); updateTimerFromHrMode(); }
+    if(timerMode==='timer'){ ensureTimerDrums(); document.getElementById('timerDurRow').classList.remove('picker-hidden'); updateTimerFromHrMode(); }
     if(timerMode==='pomodoro') document.getElementById('pomodoroPresets').classList.remove('picker-hidden');
     remaining=workTotal; rp.style.strokeDashoffset='0'; document.getElementById('ringTime').textContent=fmtDisplaySecs(workTotal);
   }
@@ -1060,18 +1149,25 @@ function updateTimerFromHrMode() {
   remaining = workTotal;
   if(timerMode==='timer'&&timerState==='idle') updateRing(workTotal,workTotal);
 }
-function getTimerWorkTotal() { updateTimerFromHrMode(); return workTotal; }
+function getTimerWorkTotal() { ensureTimerDrums(); updateTimerFromHrMode(); return workTotal; }
 
-function initDrumPickers() {
+let _cwReady=false, _timerDrumReady=false;
+function ensureCustomDrums() {
+  if(_cwReady) return; _cwReady=true;
   const wkItems=Array.from({length:120},(_,i)=>String(i+1).padStart(2,'0'));
   cwDrum=makeDrum(document.getElementById('cwPicker'),wkItems,24,()=>{ workTotal=(parseInt(cwDrum.getValue())||25)*60; if(activePreset==='custom'&&timerState==='idle'){ remaining=workTotal; updateRing(workTotal,workTotal); } updateCustomLabel(); });
   const bkItems=Array.from({length:60},(_,i)=>String(i+1).padStart(2,'0'));
   cbDrum=makeDrum(document.getElementById('cbPicker'),bkItems,4,()=>{ breakTotal=(parseInt(cbDrum.getValue())||5)*60; updateCustomLabel(); });
+}
+function ensureTimerDrums() {
+  if(_timerDrumReady) return; _timerDrumReady=true;
   const hrItems=Array.from({length:24},(_,i)=>String(i).padStart(2,'0'));
   timerHrDrum=makeDrum(document.getElementById('timerHrPicker'),hrItems,0,updateTimerFromHrMode);
   const hrMinItems=Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
   timerHrMinDrum=makeDrum(document.getElementById('timerHrMinPicker'),hrMinItems,0,updateTimerFromHrMode);
+  updateTimerFromHrMode();
 }
+function initDrumPickers() { /* lazy — called on demand */ }
 
 document.getElementById('timeFmtBtn').addEventListener('click',()=>{
   timerDisplayFmt = timerDisplayFmt==='ms' ? 'hms' : 'ms';
@@ -1085,7 +1181,7 @@ document.getElementById('presetGrid').addEventListener('click',e=>{
   const btn=e.target.closest('[data-preset]'); if(!btn||timerState!=='idle') return;
   activePreset=btn.dataset.preset;
   document.querySelectorAll('.preset-card').forEach(b=>b.classList.toggle('active',b===btn));
-  if(activePreset==='custom'){ document.getElementById('customDurRow').style.display=''; workTotal=(cwDrum?(parseInt(cwDrum.getValue())||25):25)*60; breakTotal=(cbDrum?(parseInt(cbDrum.getValue())||5):5)*60; }
+  if(activePreset==='custom'){ document.getElementById('customDurRow').style.display=''; ensureCustomDrums(); workTotal=(cwDrum?(parseInt(cwDrum.getValue())||25):25)*60; breakTotal=(cbDrum?(parseInt(cbDrum.getValue())||5):5)*60; }
   else { document.getElementById('customDurRow').style.display='none'; workTotal=PRESETS[activePreset].work; breakTotal=PRESETS[activePreset].brk; }
   remaining=workTotal; updateRing(workTotal,workTotal);
 });
@@ -1298,10 +1394,18 @@ function drawCharts(){
 // ─────────────────────────────────────────
 // Sessions list
 // ─────────────────────────────────────────
-function renderSessions(){
+let sessEditMode = false;
+
+function renderSessions() {
   const list=document.getElementById('sessList');
-  const sess=getSess().slice().reverse().slice(0,30);
-  if(!sess.length){ list.innerHTML='<div class="sess-empty">No sessions yet — start the timer to begin!</div>'; return; }
+  const editBtn=document.getElementById('sessEditBtn');
+  const all=getSess().slice().reverse();
+  const sess=all.slice(0,50);
+  if(!sess.length){
+    list.innerHTML='<div class="sess-empty">No sessions yet — start the timer to begin!</div>';
+    editBtn.style.display='none'; sessEditMode=false; editBtn.classList.remove('on'); return;
+  }
+  editBtn.style.display='';
   list.innerHTML='';
   sess.forEach(s=>{
     const cat=cats.find(c=>c.id===s.categoryId)||{name:'Unknown',color:'#76746E'};
@@ -1309,10 +1413,137 @@ function renderSessions(){
     const timeStr=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     const dateStr=d.toLocaleDateString([],{month:'short',day:'numeric'});
     const item=document.createElement('div'); item.className='sess-item';
-    item.innerHTML=`<div class="sess-bar" style="background:${cat.color}"></div><div class="sess-body"><div class="sess-cat">${cat.name}</div><div class="sess-meta">${dateStr} · ${timeStr}</div></div><div class="sess-dur">${fmtDuration(s.durationSeconds)}</div>`;
+    if(sessEditMode){
+      item.style.cursor='default';
+      item.innerHTML=`<div class="sess-bar" style="background:${cat.color}"></div><div class="sess-body"><div class="sess-cat">${cat.name}</div><div class="sess-meta">${dateStr} · ${timeStr}</div></div><div class="sess-dur">${fmtDuration(s.durationSeconds)}</div><button class="sess-del-btn" data-id="${s.id}">×</button>`;
+    } else {
+      item.innerHTML=`<div class="sess-bar" style="background:${cat.color}"></div><div class="sess-body"><div class="sess-cat">${cat.name}</div><div class="sess-meta">${dateStr} · ${timeStr}</div></div><div class="sess-dur">${fmtDuration(s.durationSeconds)}</div>`;
+      item.addEventListener('click',()=>openEditSession(s));
+    }
     list.appendChild(item);
   });
+  list.querySelectorAll('.sess-del-btn').forEach(btn=>{
+    btn.addEventListener('click',e=>{ e.stopPropagation(); deleteSession(btn.dataset.id); });
+  });
 }
+
+function deleteSession(id) {
+  saveSess(getSess().filter(s=>s.id!==id));
+  renderSessions(); drawCharts(); updateTodayCard();
+}
+
+// ── Collapse toggle ──
+document.getElementById('sessCollapseBtn').addEventListener('click',()=>{
+  const col=document.getElementById('sessCollapsible');
+  const chev=document.querySelector('.chevron-svg');
+  col.classList.toggle('collapsed');
+  chev.classList.toggle('flipped');
+});
+
+// ── Edit mode toggle ──
+document.getElementById('sessEditBtn').addEventListener('click',()=>{
+  sessEditMode=!sessEditMode;
+  document.getElementById('sessEditBtn').classList.toggle('on',sessEditMode);
+  renderSessions();
+});
+
+// ─────────────────────────────────────────
+// Edit Session Overlay
+// ─────────────────────────────────────────
+let _editSessId=null, _calY, _calM, _calD;
+let _startAp='AM', _endAp='AM';
+let _editDrumsReady=false;
+let _startHrD,_startMinD,_endHrD,_endMinD;
+
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const WDAYS=['S','M','T','W','T','F','S'];
+
+function _initEditDrums(){
+  if(_editDrumsReady) return; _editDrumsReady=true;
+  const hr12=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0'));
+  const mins=Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
+  _startHrD=makeDrum(document.getElementById('editStartHr'),hr12,0,()=>{});
+  _startMinD=makeDrum(document.getElementById('editStartMin'),mins,0,()=>{});
+  _endHrD=makeDrum(document.getElementById('editEndHr'),hr12,0,()=>{});
+  _endMinD=makeDrum(document.getElementById('editEndMin'),mins,0,()=>{});
+}
+
+function _renderCal(){
+  const now=new Date();
+  document.getElementById('calMonthLbl').textContent=`${MONTHS[_calM]} ${_calY}`;
+  const wds=document.getElementById('calWds');
+  if(!wds.children.length) WDAYS.forEach(w=>{ const d=document.createElement('div'); d.className='cal-wd'; d.textContent=w; wds.appendChild(d); });
+  const days=document.getElementById('calDays'); days.innerHTML='';
+  const first=new Date(_calY,_calM,1).getDay();
+  const total=new Date(_calY,_calM+1,0).getDate();
+  for(let i=0;i<first;i++){ const e=document.createElement('div'); e.className='cal-day'; days.appendChild(e); }
+  for(let d=1;d<=total;d++){
+    const thisDate=new Date(_calY,_calM,d);
+    const future=thisDate>now&&thisDate.toDateString()!==now.toDateString();
+    const sel=d===_calD;
+    const today=thisDate.toDateString()===now.toDateString();
+    const el=document.createElement('div');
+    el.className='cal-day'+(sel?' cal-sel':'')+(today&&!sel?' cal-today':'')+(future?' cal-disabled':'');
+    el.textContent=d;
+    if(!future) el.addEventListener('click',()=>{ _calD=d; _renderCal(); });
+    days.appendChild(el);
+  }
+}
+
+function openEditSession(s){
+  _editSessId=s.id;
+  const d=new Date(s.at);
+  _calY=d.getFullYear(); _calM=d.getMonth(); _calD=d.getDate();
+  _initEditDrums();
+  // Start time
+  let sh=d.getHours(), sm=d.getMinutes();
+  _startAp=sh>=12?'PM':'AM'; sh=sh%12||12;
+  _startHrD.setIdx(sh-1); _startMinD.setIdx(sm);
+  // End time
+  const ed=new Date(d.getTime()+s.durationSeconds*1000);
+  let eh=ed.getHours(), em=ed.getMinutes();
+  _endAp=eh>=12?'PM':'AM'; eh=eh%12||12;
+  _endHrD.setIdx(eh-1); _endMinD.setIdx(em);
+  _syncAmPm();
+  _renderCal();
+  document.getElementById('editOverlay').classList.add('open');
+}
+
+function _syncAmPm(){
+  document.getElementById('startAmBtn').classList.toggle('active',_startAp==='AM');
+  document.getElementById('startPmBtn').classList.toggle('active',_startAp==='PM');
+  document.getElementById('endAmBtn').classList.toggle('active',_endAp==='AM');
+  document.getElementById('endPmBtn').classList.toggle('active',_endAp==='PM');
+}
+
+document.getElementById('calPrev').addEventListener('click',()=>{
+  _calM--; if(_calM<0){_calM=11;_calY--;} _calD=Math.min(_calD,new Date(_calY,_calM+1,0).getDate()); _renderCal();
+});
+document.getElementById('calNext').addEventListener('click',()=>{
+  const now=new Date();
+  if(_calY>now.getFullYear()||(_calY===now.getFullYear()&&_calM>=now.getMonth())) return;
+  _calM++; if(_calM>11){_calM=0;_calY++;} _calD=Math.min(_calD,new Date(_calY,_calM+1,0).getDate()); _renderCal();
+});
+document.getElementById('startAmBtn').addEventListener('click',()=>{_startAp='AM';_syncAmPm();});
+document.getElementById('startPmBtn').addEventListener('click',()=>{_startAp='PM';_syncAmPm();});
+document.getElementById('endAmBtn').addEventListener('click',()=>{_endAp='AM';_syncAmPm();});
+document.getElementById('endPmBtn').addEventListener('click',()=>{_endAp='PM';_syncAmPm();});
+
+document.getElementById('editSaveBtn').addEventListener('click',()=>{
+  if(!_editSessId) return;
+  const sh12=parseInt(_startHrD.getValue()), sm=parseInt(_startMinD.getValue());
+  const sh24=_startAp==='AM'?(sh12===12?0:sh12):(sh12===12?12:sh12+12);
+  const startDate=new Date(_calY,_calM,_calD,sh24,sm,0);
+  const eh12=parseInt(_endHrD.getValue()), em=parseInt(_endMinD.getValue());
+  const eh24=_endAp==='AM'?(eh12===12?0:eh12):(eh12===12?12:eh12+12);
+  let endDate=new Date(_calY,_calM,_calD,eh24,em,0);
+  if(endDate<=startDate) endDate=new Date(endDate.getTime()+86400000);
+  const dur=Math.max(60,Math.round((endDate-startDate)/1000));
+  saveSess(getSess().map(s=>s.id===_editSessId?{...s,at:startDate.toISOString(),durationSeconds:dur}:s));
+  renderSessions(); drawCharts(); updateTodayCard();
+  document.getElementById('editOverlay').classList.remove('open'); _editSessId=null;
+});
+document.getElementById('editOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('editOverlay')) document.getElementById('editOverlay').classList.remove('open'); });
 
 // ─────────────────────────────────────────
 // Drum picker (kept for potential future use)
