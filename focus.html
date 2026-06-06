@@ -414,7 +414,7 @@ main {
 .cal-month-lbl { font-size:14px; font-weight:700; color:var(--text-primary); }
 .cal-wds { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:2px; }
 .cal-wd { font-size:10px; font-weight:600; color:var(--text-tertiary); text-align:center; padding:2px 0 4px; letter-spacing:0.03em; }
-.cal-days { display:grid; grid-template-columns:repeat(7,1fr); }
+.cal-days { display:grid; grid-template-columns:repeat(7,1fr); grid-template-rows:repeat(6,auto); min-height:210px; align-content:start; }
 .cal-day { height:33px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:13px; font-weight:500; color:var(--text-primary); cursor:pointer; transition:background 0.12s; margin:1px 0; }
 .cal-day:hover:not(.cal-disabled):not(.cal-sel) { background:rgba(255,255,255,0.08); }
 .cal-day.cal-sel { background:#6BE3A4; color:#000; font-weight:700; }
