@@ -337,11 +337,11 @@ body::after {
 }
 .work-strip-right { display: flex; align-items: baseline; gap: 8px; }
 .work-strip-time {
-  font-size: 20px; font-weight: 700; letter-spacing: -0.5px;
+  font-size: 17px; font-weight: 700; letter-spacing: -0.5px;
   color: var(--text-primary); font-family: var(--font-mono, monospace);
 }
 .work-strip-pct {
-  font-size: 11px; font-weight: 600; color: var(--success, #6BE3A4);
+  font-size: 10px; font-weight: 600; color: var(--success, #6BE3A4);
 }
 
 /* ===== Component 4: section + To Do List ===== */
@@ -1837,7 +1837,7 @@ body::after {
     const awakeH = Math.max(0.1, now.getHours() + now.getMinutes() / 60 - WAKE_HOUR);
     const pct = Math.min(100, Math.round((totalSecs / 3600 / awakeH) * 100));
     document.getElementById('workStripTime').textContent = timeStr;
-    document.getElementById('workStripPct').textContent = pct + '% of awake time';
+    document.getElementById('workStripPct').textContent = pct + '% of time awake';
   }
 
   // ---------- Boot ----------
