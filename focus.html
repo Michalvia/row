@@ -51,8 +51,6 @@ main {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 18px; padding: 22px 18px 20px; margin-bottom: 10px; text-align: center;
 }
-
-/* Pomodoro cycle */
 .f-cycle-opts { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
 .f-cycle-btn {
   padding: 5px 13px; background: none;
@@ -63,8 +61,6 @@ main {
 .f-cycle-btn.active {
   background: rgba(107,227,164,0.12); border-color: rgba(107,227,164,0.35); color: #6BE3A4;
 }
-
-/* Countdown inputs */
 .f-cd-row {
   display: flex; align-items: flex-end; justify-content: center; gap: 3px; margin-bottom: 14px;
 }
@@ -79,13 +75,8 @@ main {
 .f-cd-num::-webkit-outer-spin-button,
 .f-cd-num::-webkit-inner-spin-button { -webkit-appearance: none; }
 .f-cd-num:focus { border-color: rgba(255,255,255,0.24); }
-.f-cd-unit {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--text-tertiary);
-}
+.f-cd-unit { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-tertiary); }
 .f-cd-sep { font-size: 26px; font-weight: 700; color: var(--text-tertiary); padding-bottom: 20px; }
-
-/* Display */
 .f-display {
   font-family: var(--font-mono); font-size: clamp(54px, 18vw, 80px); font-weight: 700;
   letter-spacing: -2px; color: var(--text-primary); line-height: 1; margin-bottom: 6px;
@@ -95,8 +86,6 @@ main {
   font-size: 11px; color: var(--text-tertiary); font-weight: 700;
   letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 20px; min-height: 15px;
 }
-
-/* Controls */
 .f-controls { display: flex; gap: 8px; justify-content: center; }
 .f-btn-primary {
   padding: 11px 24px;
@@ -112,8 +101,6 @@ main {
   cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent;
 }
 .f-btn-secondary:hover { background: rgba(255,255,255,0.09); }
-
-/* Laps */
 .f-lap-list {
   list-style: none; margin-top: 14px; max-height: 148px; overflow-y: auto;
   display: flex; flex-direction: column; gap: 4px;
@@ -135,7 +122,20 @@ main {
   color: var(--text-tertiary); margin-bottom: 14px;
 }
 
-/* ── Log card ── */
+/* ── Timer log card ── */
+.f-pending {
+  text-align: center; padding: 8px 12px 12px;
+  font-size: 13px; color: var(--text-tertiary);
+}
+.f-pending-dur {
+  font-family: var(--font-mono); font-size: 32px; font-weight: 700;
+  color: #6BE3A4; letter-spacing: -1px; display: block; margin-bottom: 4px;
+}
+.f-pending-hint { font-size: 12px; color: var(--text-tertiary); }
+.f-log-ok {
+  font-size: 13px; color: #6BE3A4; text-align: center;
+  min-height: 18px; margin-top: 8px;
+}
 .f-row { display: flex; gap: 8px; margin-bottom: 10px; }
 .f-cat-select {
   flex: 1; padding: 10px 12px;
@@ -181,28 +181,32 @@ main {
 }
 .f-save-cat:hover { background: rgba(255,255,255,0.10); }
 
-/* Duration row */
+/* ── Manual log card ── */
 .f-sub-label {
   font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text-tertiary); margin-bottom: 6px;
+  color: var(--text-tertiary); margin-bottom: 5px;
 }
-.f-dur-row { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 12px; }
-.f-dur-num {
-  width: 54px; padding: 7px 4px; text-align: center; outline: none;
-  background: rgba(255,255,255,0.06); border: 1px solid var(--border-strong);
-  border-radius: 9px; color: var(--text-primary); font-family: var(--font-mono); font-size: 22px; font-weight: 700;
-  -moz-appearance: textfield; transition: border-color 0.15s;
+.f-dt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 12px; }
+.f-dt-group { display: flex; flex-direction: column; }
+.f-dt-input {
+  padding: 9px 10px; outline: none;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong);
+  border-radius: 10px; color: var(--text-primary); font-family: var(--font); font-size: 12px;
+  color-scheme: dark; width: 100%; transition: border-color 0.15s;
 }
-.f-dur-num::-webkit-outer-spin-button,
-.f-dur-num::-webkit-inner-spin-button { -webkit-appearance: none; }
-.f-dur-num:focus { border-color: rgba(255,255,255,0.22); }
-.f-dur-sep { font-size: 22px; font-weight: 700; color: var(--text-tertiary); }
+.f-dt-input:focus { border-color: rgba(255,255,255,0.22); }
+.f-man-dur {
+  font-family: var(--font-mono); font-size: 30px; font-weight: 700;
+  color: var(--text-primary); text-align: center; letter-spacing: -1px;
+  margin: 4px 0 14px; min-height: 38px;
+}
+.f-man-dur.empty { color: var(--text-tertiary); font-size: 22px; font-weight: 400; letter-spacing: 0; }
 .f-log-err { font-size: 12px; color: #FF8A8A; min-height: 16px; margin-bottom: 8px; }
 .f-log-btn {
   width: 100%; padding: 12px;
   background: rgba(107,227,164,0.10); border: 1px solid rgba(107,227,164,0.28);
   border-radius: 12px; color: #6BE3A4; font-family: var(--font); font-size: 14px; font-weight: 700;
-  cursor: pointer; transition: background 0.15s, color 0.15s;
+  cursor: pointer; transition: background 0.15s;
 }
 .f-log-btn:hover { background: rgba(107,227,164,0.18); }
 
@@ -245,13 +249,11 @@ canvas { display: block; width: 100%; }
 
   <!-- Timer card -->
   <div class="f-timer-card">
-    <!-- Pomodoro cycle -->
     <div class="f-cycle-opts" id="fCycleOpts">
       <button class="f-cycle-btn active" data-cycle="25-5">25 / 5</button>
       <button class="f-cycle-btn"        data-cycle="50-10">50 / 10</button>
       <button class="f-cycle-btn"        data-cycle="90-20">90 / 20</button>
     </div>
-    <!-- Countdown inputs -->
     <div class="f-cd-row" id="fCdRow" style="display:none">
       <div class="f-cd-col">
         <input type="number" class="f-cd-num" id="cdH" min="0" max="23" value="0">
@@ -268,10 +270,8 @@ canvas { display: block; width: 100%; }
         <span class="f-cd-unit">sec</span>
       </div>
     </div>
-    <!-- Display -->
     <div class="f-display" id="fDisplay">25:00</div>
     <div class="f-phase"   id="fPhase">Work · Round 1</div>
-    <!-- Controls -->
     <div class="f-controls">
       <button class="f-btn-primary"   id="fStartBtn">▶&ensp;Start</button>
       <button class="f-btn-secondary" id="fResetBtn">↺&ensp;Reset</button>
@@ -280,31 +280,53 @@ canvas { display: block; width: 100%; }
     <ul class="f-lap-list" id="fLapList"></ul>
   </div>
 
-  <!-- Log session card -->
+  <!-- Timer log card: auto-saves when category is picked after a session completes -->
   <div class="f-card">
     <div class="f-card-title">Log Session</div>
+    <div class="f-pending" id="fPending">
+      <span class="f-pending-hint">Complete a timer session, then pick a category below to save it instantly.</span>
+    </div>
     <div class="f-row">
       <select class="f-cat-select" id="fCatSelect">
         <option value="">— Pick a category —</option>
       </select>
       <button class="f-icon-btn" id="fCatNewBtn" title="New category">+</button>
     </div>
-    <!-- New category form (collapsed by default) -->
     <div class="f-cat-form" id="fCatForm" style="display:none">
       <input type="text" class="f-cat-input" id="fCatName" placeholder="Category name…" maxlength="30">
       <div class="f-swatches" id="fSwatches"></div>
       <button class="f-save-cat" id="fSaveCatBtn">Save Category</button>
     </div>
-    <div class="f-sub-label">Duration</div>
-    <div class="f-dur-row">
-      <input type="number" class="f-dur-num" id="logH" min="0" max="23" value="0">
-      <span class="f-dur-sep">:</span>
-      <input type="number" class="f-dur-num" id="logM" min="0" max="59" value="0">
-      <span class="f-dur-sep">:</span>
-      <input type="number" class="f-dur-num" id="logS" min="0" max="59" value="0">
+    <div class="f-log-ok" id="fLogOk"></div>
+  </div>
+
+  <!-- Manual past-session log card -->
+  <div class="f-card">
+    <div class="f-card-title">Log Past Session</div>
+    <div class="f-row">
+      <select class="f-cat-select" id="fManCatSelect">
+        <option value="">— Pick a category —</option>
+      </select>
+      <button class="f-icon-btn" id="fManCatNewBtn" title="New category">+</button>
     </div>
-    <div class="f-log-err" id="fLogErr"></div>
-    <button class="f-log-btn" id="fLogBtn">Save Session</button>
+    <div class="f-cat-form" id="fManCatForm" style="display:none">
+      <input type="text" class="f-cat-input" id="fManCatName" placeholder="Category name…" maxlength="30">
+      <div class="f-swatches" id="fManSwatches"></div>
+      <button class="f-save-cat" id="fManSaveCatBtn">Save Category</button>
+    </div>
+    <div class="f-dt-row">
+      <div class="f-dt-group">
+        <div class="f-sub-label">Started</div>
+        <input type="datetime-local" class="f-dt-input" id="manStart">
+      </div>
+      <div class="f-dt-group">
+        <div class="f-sub-label">Stopped</div>
+        <input type="datetime-local" class="f-dt-input" id="manEnd">
+      </div>
+    </div>
+    <div class="f-man-dur empty" id="fManDur">—</div>
+    <div class="f-log-err" id="fManErr"></div>
+    <button class="f-log-btn" id="fManLogBtn">Save Past Session</button>
   </div>
 
   <!-- Analytics card -->
@@ -334,10 +356,9 @@ canvas { display: block; width: 100%; }
 (function () {
   'use strict';
 
-  // ── Storage keys ──────────────────────────────────────────────
+  // ── Storage ───────────────────────────────────────────────────
   const K_CATS = 'focus:categories';
   const K_SESS = 'focus:sessions';
-
   const PALETTE = [
     '#6BE3A4','#7B9CEF','#FFB347','#FF6B6B','#C77DFF',
     '#38B6FF','#FCD34D','#F8A4C8','#6EE7B7','#FDBA74'
@@ -348,19 +369,41 @@ canvas { display: block; width: 100%; }
   function saveCats(d) { try { localStorage.setItem(K_CATS, JSON.stringify(d)); } catch {} }
   function saveSess(d) { try { localStorage.setItem(K_SESS, JSON.stringify(d)); } catch {} }
 
+  // ── Completion chime (Web Audio API) ─────────────────────────
+  function playChime() {
+    try {
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      // Three ascending notes: C5 → E5 → G5, spaced 180 ms apart
+      [523.25, 659.25, 783.99].forEach((freq, i) => {
+        const osc  = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.connect(gain); gain.connect(ac.destination);
+        osc.type = 'sine'; osc.frequency.value = freq;
+        const t = ac.currentTime + i * 0.18;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.22, t + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+        osc.start(t); osc.stop(t + 1.1);
+      });
+      setTimeout(() => { try { ac.close(); } catch {} }, 3000);
+    } catch (e) {}
+  }
+
   // ── Timer state ───────────────────────────────────────────────
   let mode      = 'pomodoro';
   let running   = false;
   let pomoWork  = 25, pomoBreak = 5;
   let pomoPhase = 'work', pomoRound = 1;
-  let timerTotal = 25 * 60; // seconds (pomo/countdown)
+  let timerTotal = 25 * 60;
   let timerLeft  = 25 * 60;
-  let startedAt  = 0;        // Date.now() when last resumed
-  let pausedMs   = 0;        // cumulative ms elapsed before last start
+  let startedAt  = 0;
+  let pausedMs   = 0;
   let swLaps     = [];
   let ticker     = null;
 
-  // ── Elements ──────────────────────────────────────────────────
+  // Pending session: set when a timer completes, cleared after logging
+  let pendingSession = null; // { durationSeconds, at }
+
   const displayEl = document.getElementById('fDisplay');
   const phaseEl   = document.getElementById('fPhase');
   const startBtn  = document.getElementById('fStartBtn');
@@ -370,7 +413,7 @@ canvas { display: block; width: 100%; }
   const cycleOpts = document.getElementById('fCycleOpts');
   const cdRow     = document.getElementById('fCdRow');
 
-  // ── Format ───────────────────────────────────────────────────
+  // ── Format helpers ────────────────────────────────────────────
   function pad(n) { return String(Math.floor(n)).padStart(2, '0'); }
   function fmtS(s) {
     s = Math.max(0, Math.round(s));
@@ -378,9 +421,7 @@ canvas { display: block; width: 100%; }
     return h > 0 ? h + ':' + pad(m) + ':' + pad(ss) : pad(m) + ':' + pad(ss);
   }
   function fmtMs(ms) { return fmtS(ms / 1000); }
-  function durStr(s) {
-    return s >= 3600 ? (s / 3600).toFixed(1) + 'h' : Math.round(s / 60) + 'm';
-  }
+  function durStr(s) { return s >= 3600 ? (s / 3600).toFixed(1) + 'h' : Math.round(s / 60) + 'm'; }
 
   // ── Timer core ────────────────────────────────────────────────
   function elapsedMs() {
@@ -399,7 +440,7 @@ canvas { display: block; width: 100%; }
         phaseEl.textContent = running ? 'Counting down…' : (timerLeft > 0 && timerLeft < timerTotal ? 'Paused' : '');
       }
     }
-    startBtn.textContent = running ? '⏸ Pause' : '▶ Start';
+    startBtn.textContent = running ? '⏸ Pause' : '▶ Start';
   }
 
   function tick() {
@@ -412,7 +453,10 @@ canvas { display: block; width: 100%; }
   function onComplete() {
     const worked = timerTotal;
     doPause();
-    prefillLog(mode === 'pomodoro' ? pomoWork * 60 : worked);
+    playChime();
+    // Store pending session so the category picker can auto-save it
+    pendingSession = { durationSeconds: Math.round(worked), at: new Date().toISOString() };
+    renderPending();
     if (mode === 'pomodoro') {
       if (pomoPhase === 'work') { pomoPhase = 'break'; timerTotal = pomoBreak * 60; }
       else { pomoPhase = 'work'; pomoRound++; timerTotal = pomoWork * 60; }
@@ -420,6 +464,16 @@ canvas { display: block; width: 100%; }
       renderDisplay();
     } else {
       phaseEl.textContent = 'Done!';
+    }
+  }
+
+  function renderPending() {
+    const el = document.getElementById('fPending');
+    if (pendingSession) {
+      el.innerHTML = '<span class="f-pending-dur">' + fmtS(pendingSession.durationSeconds) + '</span>'
+        + '<span class="f-pending-hint">Session complete — pick a category below to save it.</span>';
+    } else {
+      el.innerHTML = '<span class="f-pending-hint">Complete a timer session, then pick a category below to save it instantly.</span>';
     }
   }
 
@@ -510,35 +564,39 @@ canvas { display: block; width: 100%; }
   });
 
   // ── Categories ────────────────────────────────────────────────
-  let pickedColor = PALETTE[0];
+  let pickedColor    = PALETTE[0];
+  let manPickedColor = PALETTE[0];
 
-  function buildSwatches() {
-    const wrap = document.getElementById('fSwatches');
+  function buildSwatches(wrapId, colorRef, setColor) {
+    const wrap = document.getElementById(wrapId);
     wrap.innerHTML = '';
     PALETTE.forEach(c => {
       const el = document.createElement('div');
-      el.className = 'f-swatch' + (c === pickedColor ? ' sel' : '');
+      el.className = 'f-swatch' + (c === colorRef ? ' sel' : '');
       el.style.background = c; el.dataset.c = c;
       el.addEventListener('click', () => {
-        pickedColor = c;
+        setColor(c);
         wrap.querySelectorAll('.f-swatch').forEach(s => s.classList.toggle('sel', s.dataset.c === c));
       });
       wrap.appendChild(el);
     });
   }
 
-  function refreshCatSelect() {
-    const sel = document.getElementById('fCatSelect');
-    const cur = sel.value;
-    sel.innerHTML = '<option value="">— Pick a category —</option>';
-    getCats().forEach(cat => {
-      const o = document.createElement('option');
-      o.value = cat.id; o.textContent = cat.name;
-      sel.appendChild(o);
+  function refreshCatSelects() {
+    ['fCatSelect', 'fManCatSelect'].forEach(id => {
+      const sel = document.getElementById(id);
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">— Pick a category —</option>';
+      getCats().forEach(cat => {
+        const o = document.createElement('option');
+        o.value = cat.id; o.textContent = cat.name;
+        sel.appendChild(o);
+      });
+      if (cur) sel.value = cur;
     });
-    if (cur) sel.value = cur;
   }
 
+  // Timer log — new category
   const catForm    = document.getElementById('fCatForm');
   const catNewBtn  = document.getElementById('fCatNewBtn');
   const catNameEl  = document.getElementById('fCatName');
@@ -548,63 +606,143 @@ canvas { display: block; width: 100%; }
     const open = catForm.style.display !== 'none';
     catForm.style.display = open ? 'none' : '';
     catNewBtn.classList.toggle('open', !open);
-    if (!open) { buildSwatches(); catNameEl.focus(); }
+    if (!open) { buildSwatches('fSwatches', pickedColor, c => { pickedColor = c; }); catNameEl.focus(); }
   });
 
-  function saveCategory() {
-    const name = catNameEl.value.trim();
-    if (!name) { catNameEl.focus(); return; }
+  function saveCategory(nameEl, formEl, newBtn, getColor) {
+    const name = nameEl.value.trim();
+    if (!name) { nameEl.focus(); return; }
     const cats = getCats();
     const id = 'cat_' + Date.now();
-    cats.push({ id, name, color: pickedColor });
+    cats.push({ id, name, color: getColor() });
     saveCats(cats);
-    catForm.style.display = 'none';
-    catNewBtn.classList.remove('open');
-    catNameEl.value = '';
-    refreshCatSelect();
-    document.getElementById('fCatSelect').value = id;
+    formEl.style.display = 'none'; newBtn.classList.remove('open');
+    nameEl.value = '';
+    refreshCatSelects();
     drawCharts();
+    return id;
   }
 
-  saveCatBtn.addEventListener('click', saveCategory);
+  saveCatBtn.addEventListener('click', () => {
+    const id = saveCategory(catNameEl, catForm, catNewBtn, () => pickedColor);
+    if (id) document.getElementById('fCatSelect').value = id;
+  });
   catNameEl.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); saveCategory(); }
+    if (e.key === 'Enter') { e.preventDefault(); saveCatBtn.click(); }
     if (e.key === 'Escape') { catForm.style.display = 'none'; catNewBtn.classList.remove('open'); }
   });
 
-  // ── Session logging ───────────────────────────────────────────
-  function prefillLog(totalSeconds) {
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = Math.floor(totalSeconds % 60);
-    document.getElementById('logH').value = h;
-    document.getElementById('logM').value = m;
-    document.getElementById('logS').value = s;
-  }
+  // Manual log — new category
+  const manCatForm    = document.getElementById('fManCatForm');
+  const manCatNewBtn  = document.getElementById('fManCatNewBtn');
+  const manCatNameEl  = document.getElementById('fManCatName');
+  const manSaveCatBtn = document.getElementById('fManSaveCatBtn');
 
-  document.getElementById('fLogBtn').addEventListener('click', () => {
-    const errEl = document.getElementById('fLogErr');
-    const catId = document.getElementById('fCatSelect').value;
-    if (!catId) { errEl.textContent = 'Pick a category first.'; return; }
-    const h = parseInt(document.getElementById('logH').value) || 0;
-    const m = parseInt(document.getElementById('logM').value) || 0;
-    const s = parseInt(document.getElementById('logS').value) || 0;
-    const dur = h * 3600 + m * 60 + s;
-    if (dur === 0) { errEl.textContent = 'Set a duration greater than zero.'; return; }
-    errEl.textContent = '';
-    const sess = getSess();
-    sess.push({ id: 'sess_' + Date.now(), categoryId: catId, durationSeconds: dur, at: new Date().toISOString() });
-    saveSess(sess);
-    document.getElementById('logH').value = 0;
-    document.getElementById('logM').value = 0;
-    document.getElementById('logS').value = 0;
-    drawCharts();
-    const btn = document.getElementById('fLogBtn');
-    btn.textContent = '✓ Saved';
-    setTimeout(() => { btn.textContent = 'Save Session'; }, 1400);
+  manCatNewBtn.addEventListener('click', () => {
+    const open = manCatForm.style.display !== 'none';
+    manCatForm.style.display = open ? 'none' : '';
+    manCatNewBtn.classList.toggle('open', !open);
+    if (!open) { buildSwatches('fManSwatches', manPickedColor, c => { manPickedColor = c; }); manCatNameEl.focus(); }
   });
 
-  // ── Period ────────────────────────────────────────────────────
+  manSaveCatBtn.addEventListener('click', () => {
+    const id = saveCategory(manCatNameEl, manCatForm, manCatNewBtn, () => manPickedColor);
+    if (id) document.getElementById('fManCatSelect').value = id;
+  });
+  manCatNameEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); manSaveCatBtn.click(); }
+    if (e.key === 'Escape') { manCatForm.style.display = 'none'; manCatNewBtn.classList.remove('open'); }
+  });
+
+  // ── Auto-log when category is selected (timer flow) ───────────
+  document.getElementById('fCatSelect').addEventListener('change', () => {
+    const catId = document.getElementById('fCatSelect').value;
+    if (!catId || !pendingSession) return;
+
+    const sess = getSess();
+    sess.push({
+      id: 'sess_' + Date.now(),
+      categoryId: catId,
+      durationSeconds: pendingSession.durationSeconds,
+      at: pendingSession.at
+    });
+    saveSess(sess);
+
+    const catName = (getCats().find(c => c.id === catId) || {}).name || 'category';
+    const okEl = document.getElementById('fLogOk');
+    okEl.textContent = '✓ Saved ' + fmtS(pendingSession.durationSeconds) + ' to ' + catName;
+    pendingSession = null;
+    renderPending();
+    drawCharts();
+
+    setTimeout(() => { okEl.textContent = ''; }, 2500);
+  });
+
+  // ── Manual past-session log ───────────────────────────────────
+  function toInputValue(d) {
+    // datetime-local needs local ISO string without seconds
+    const off   = d.getTimezoneOffset();
+    const local = new Date(d.getTime() - off * 60000);
+    return local.toISOString().slice(0, 16);
+  }
+
+  function initManDates() {
+    const now   = new Date();
+    const start = new Date(now.getTime() - 3600000); // 1 h ago
+    document.getElementById('manStart').value = toInputValue(start);
+    document.getElementById('manEnd').value   = toInputValue(now);
+    updateManDur();
+  }
+
+  function updateManDur() {
+    const s = new Date(document.getElementById('manStart').value);
+    const e = new Date(document.getElementById('manEnd').value);
+    const el = document.getElementById('fManDur');
+    if (!isNaN(s) && !isNaN(e) && e > s) {
+      const secs = Math.round((e - s) / 1000);
+      el.textContent = fmtS(secs);
+      el.classList.remove('empty');
+    } else {
+      el.textContent = '—';
+      el.classList.add('empty');
+    }
+  }
+
+  document.getElementById('manStart').addEventListener('change', updateManDur);
+  document.getElementById('manEnd').addEventListener('change', updateManDur);
+
+  document.getElementById('fManLogBtn').addEventListener('click', () => {
+    const errEl = document.getElementById('fManErr');
+    const catId = document.getElementById('fManCatSelect').value;
+    if (!catId) { errEl.textContent = 'Pick a category first.'; return; }
+
+    const s = new Date(document.getElementById('manStart').value);
+    const e = new Date(document.getElementById('manEnd').value);
+    if (isNaN(s) || isNaN(e)) { errEl.textContent = 'Set a valid start and stop time.'; return; }
+    if (e <= s) { errEl.textContent = 'Stop time must be after start time.'; return; }
+
+    const dur = Math.round((e - s) / 1000);
+    errEl.textContent = '';
+
+    const sess = getSess();
+    sess.push({
+      id: 'sess_' + Date.now(),
+      categoryId: catId,
+      durationSeconds: dur,
+      at: s.toISOString()   // attribute to start time
+    });
+    saveSess(sess);
+    drawCharts();
+
+    const btn = document.getElementById('fManLogBtn');
+    btn.textContent = '✓ Saved';
+    setTimeout(() => { btn.textContent = 'Save Past Session'; }, 1400);
+
+    // Reset to current time window
+    initManDates();
+  });
+
+  // ── Period / Analytics ────────────────────────────────────────
   let period = 'today';
 
   document.getElementById('fPeriodTabs').querySelectorAll('.f-period-tab').forEach(t => {
@@ -674,10 +812,8 @@ canvas { display: block; width: 100%; }
         ctx.rect(x, y, bW, Math.max(2, bH));
       }
       ctx.fill();
-      // category label
       ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(d.name.length > 5 ? d.name.slice(0, 4) + '…' : d.name, x + bW / 2, H - pB + 10);
-      // value above bar
       if (bH > 4) {
         ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '8px sans-serif';
         ctx.fillText(durStr(d.secs), x + bW / 2, y - 3);
@@ -713,11 +849,9 @@ canvas { display: block; width: 100%; }
       a += (d.secs / total) * Math.PI * 2;
     });
 
-    // Center text
-    const valStr = durStr(total);
     ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(valStr, cx, cy - 7);
+    ctx.fillText(durStr(total), cx, cy - 7);
     ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '9px sans-serif';
     ctx.fillText('total', cx, cy + 8);
   }
@@ -726,8 +860,7 @@ canvas { display: block; width: 100%; }
     const el = document.getElementById('fLegend');
     el.innerHTML = '';
     if (!data.length) {
-      el.innerHTML = '<div class="f-no-data">No sessions logged yet — complete a timer or log a session above.</div>';
-      return;
+      el.innerHTML = '<div class="f-no-data">No sessions logged yet.</div>'; return;
     }
     data.forEach(d => {
       const item = document.createElement('div');
@@ -744,9 +877,12 @@ canvas { display: block; width: 100%; }
   }
 
   // ── Init ──────────────────────────────────────────────────────
-  refreshCatSelect();
-  buildSwatches();
+  refreshCatSelects();
+  buildSwatches('fSwatches', pickedColor, c => { pickedColor = c; });
+  buildSwatches('fManSwatches', manPickedColor, c => { manPickedColor = c; });
   setMode('pomodoro');
+  renderPending();
+  initManDates();
   requestAnimationFrame(drawCharts);
 
   if (window.ResizeObserver) {
@@ -759,7 +895,7 @@ canvas { display: block; width: 100%; }
       initCloudSync({
         appKey: 'focus',
         syncedKeys: [K_CATS, K_SESS],
-        onApplied() { refreshCatSelect(); drawCharts(); }
+        onApplied() { refreshCatSelects(); drawCharts(); }
       });
     }
   });
