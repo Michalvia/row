@@ -282,6 +282,7 @@ main {
   width: 100%; height: 100%;
   transform: rotate(-90deg);
   overflow: visible;
+  filter: drop-shadow(0 0 10px rgba(107,227,164,0.14)) drop-shadow(0 0 24px rgba(107,227,164,0.07));
 }
 .ring-track { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 10; }
 .ring-progress {
@@ -509,7 +510,7 @@ main {
 .drum-sel-line { position:absolute; left:8px; right:8px; height:1px; background:rgba(255,255,255,0.10); pointer-events:none; z-index:3; }
 .drum-sel-line.top { top:calc(50% - 19px); }
 .drum-sel-line.bot { top:calc(50% + 19px); }
-.drum-track { position:relative; transition:transform 0.28s var(--ease-spring); }
+.drum-track { position:relative; transition:transform 0.16s var(--ease-spring); }
 .drum-item {
   height:38px; display:flex; align-items:center; justify-content:center;
   font-family:var(--font-mono); font-size:20px; font-weight:600;
@@ -1630,13 +1631,13 @@ function makeDrum(wrapEl,items,initIdx,onChange){
   const track=document.createElement('div'); track.className='drum-track';
   items.forEach((item,i)=>{ const d=document.createElement('div'); d.className='drum-item'+(i===curIdx?' sel':''); d.textContent=item; track.appendChild(d); });
   wrapEl.appendChild(track);
-  function applyTy(y,animated){ track.style.transition=animated?'transform 0.3s cubic-bezier(0.22,1,0.36,1)':'none'; track.style.transform=`translateY(${y}px)`; track.querySelectorAll('.drum-item').forEach((el,i)=>el.classList.toggle('sel',i===curIdx)); }
+  function applyTy(y,animated){ track.style.transition=animated?'transform 0.16s cubic-bezier(0.22,1,0.36,1)':'none'; track.style.transform=`translateY(${y}px)`; track.querySelectorAll('.drum-item').forEach((el,i)=>el.classList.toggle('sel',i===curIdx)); }
   function snap(animated=true){ curIdx=Math.max(0,Math.min(Math.round((DRUM_CTR-ty-ITEM_H/2)/ITEM_H),items.length-1)); ty=drumGetTy(curIdx); applyTy(ty,animated); onChange(curIdx,items[curIdx]); }
   applyTy(ty,false);
   let lastY=0,velY=0,lastT=0,down=false;
   wrapEl.addEventListener('pointerdown',e=>{ down=true; wrapEl.setPointerCapture(e.pointerId); lastY=e.clientY; velY=0; lastT=Date.now(); track.style.transition='none'; });
   wrapEl.addEventListener('pointermove',e=>{ if(!down) return; const now=Date.now(),dy=e.clientY-lastY; velY=dy/(now-lastT||1)*16; ty+=dy; const mn=drumGetTy(items.length-1),mx=drumGetTy(0); if(ty<mn) ty=mn+(ty-mn)*0.18; if(ty>mx) ty=mx+(ty-mx)*0.18; applyTy(ty,false); lastY=e.clientY; lastT=now; });
-  wrapEl.addEventListener('pointerup',()=>{ down=false; let v=velY; function momentum(){ v*=0.93; ty+=v; const mn=drumGetTy(items.length-1),mx=drumGetTy(0); if(ty<mn||ty>mx){snap();return;} applyTy(ty,false); if(Math.abs(v)>0.5) requestAnimationFrame(momentum); else snap(); } if(Math.abs(v)>1) requestAnimationFrame(momentum); else snap(); });
+  wrapEl.addEventListener('pointerup',()=>{ down=false; let v=velY; function momentum(){ v*=0.82; ty+=v; const mn=drumGetTy(items.length-1),mx=drumGetTy(0); if(ty<mn||ty>mx){snap();return;} applyTy(ty,false); if(Math.abs(v)>1.5) requestAnimationFrame(momentum); else snap(); } if(Math.abs(v)>2) requestAnimationFrame(momentum); else snap(); });
   return { getIdx(){ return curIdx; }, getValue(){ return items[curIdx]; }, setIdx(idx,animated=true){ curIdx=Math.max(0,Math.min(idx,items.length-1)); ty=drumGetTy(curIdx); applyTy(ty,animated); } };
 }
 
