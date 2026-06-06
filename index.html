@@ -1632,19 +1632,22 @@ body::after {
       const text = input.value.trim();
       if (!text) return;
       if (!ANTHROPIC_API_KEY) {
-        plainAdd(text);
-        showStatus(statusEl, 'Polish needs an Anthropic API key — added as-typed.', false);
+        showStatus(statusEl, 'Polish needs an Anthropic API key.', false);
         return;
       }
       polishBtn.disabled = true;
+      polishBtn.textContent = '✨…';
       try {
         const polished = await polishOne(text);
-        plainAdd(polished);
+        input.value = polished;
+        input.focus();
+        input.select();
+        showStatus(statusEl, 'Polished — press Add to confirm.', false);
       } catch (e) {
-        plainAdd(text);
-        showStatus(statusEl, 'Polish failed — added as-typed.', true);
+        showStatus(statusEl, 'Polish failed — try again.', true);
       } finally {
         polishBtn.disabled = false;
+        polishBtn.textContent = '✨ Polish';
       }
     });
   }
