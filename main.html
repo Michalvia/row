@@ -344,6 +344,40 @@ body::after {
   font-size: 10px; font-weight: 600; color: var(--success, #6BE3A4);
 }
 
+/* ===== Planned card ===== */
+.card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid transparent;
+  border-radius: 16px; padding: 18px 20px;
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.25);
+  position: relative; overflow: visible;
+  margin-bottom: 10px;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 14px; right: 14px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+  pointer-events: none;
+}
+.card-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 12px;
+}
+.pl-section-hd { font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-tertiary);margin:10px 0 6px; }
+.pl-section-hd:first-child { margin-top:0; }
+.pl-row { display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04); }
+.pl-row:last-child { border-bottom:none; }
+.pl-check { appearance:none;-webkit-appearance:none;width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.18);background:transparent;cursor:pointer;flex-shrink:0;position:relative;transition:background 0.2s,border-color 0.2s; }
+.pl-check:checked { background:#C084FC;border-color:#C084FC; }
+.pl-check:checked::after { content:'';position:absolute;left:4px;top:1px;width:4px;height:7px;border:solid #0A0A0B;border-width:0 2px 2px 0;transform:rotate(45deg); }
+.pl-time { font-family:var(--font-mono);font-size:10px;font-weight:600;color:#C084FC;letter-spacing:0.05em;flex-shrink:0;min-width:52px; }
+.pl-text { flex:1;font-size:13px;font-weight:600;color:var(--text-primary); }
+.pl-row.pl-done .pl-text { text-decoration:line-through;color:var(--text-tertiary); }
+
 /* ===== Component 4: section + To Do List ===== */
 .section { margin-top: 8px; }
 .section-title {
@@ -564,9 +598,10 @@ body::after {
 .gm-sub-del:hover { color: var(--danger); opacity: 1 !important; }
 
 .gm-subgoal-add-row {
-  display: flex; align-items: center; gap: 6px;
+  display: none; align-items: center; gap: 6px;
   padding: 5px 4px;
 }
+.gm-subgoal-add-row.open { display: flex; }
 .gm-subgoal-input {
   flex: 1; background: transparent; border: 0;
   border-bottom: 1px solid rgba(255,255,255,0.10);
@@ -853,6 +888,12 @@ body::after {
     </div>
   </div>
 
+  <div class="card" id="plannedCard" style="display:none">
+    <div class="card-label" style="font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:12px">Planned</div>
+    <div id="plannedTodaySection"></div>
+    <div id="plannedTomorrowSection"></div>
+  </div>
+
   <div class="section">
     <div class="section-title">To Do List</div>
 
@@ -952,10 +993,43 @@ body::after {
   function storeGet(key) {
     try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
   }
+
+  // ---------- planner sync helpers ----------
+  const _PLAN_STORE = 'planner:tasks';
+  let _goalSyncing = false;
+  function _planUid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+  function _syncGoalsToTasks(date, goals) {
+    let all; try { all = JSON.parse(localStorage.getItem(_PLAN_STORE)) || []; } catch { all = []; }
+    const gIds = new Set(goals.filter(g => g.taskId).map(g => g.taskId));
+    all = all.filter(t => !(t.date === date && t._fromGoal && !gIds.has(t.id)));
+    let dirty = false;
+    goals.forEach(g => {
+      if (g.taskId) {
+        const t = all.find(t => t.id === g.taskId);
+        if (t) { t.text = g.text; t.done = !!g.done; if (g.subgoals) t.subtasks = g.subgoals.map(s => ({text:s.text,done:!!s.done})); }
+        else all.push({ id:g.taskId, text:g.text, date, time:null, endTime:null, done:!!g.done, subtasks:(g.subgoals||[]).map(s=>({text:s.text,done:!!s.done})), createdAt:Date.now(), _fromGoal:true });
+      } else {
+        g.taskId = _planUid(); dirty = true;
+        all.push({ id:g.taskId, text:g.text, date, time:null, endTime:null, done:!!g.done, subtasks:(g.subgoals||[]).map(s=>({text:s.text,done:!!s.done})), createdAt:Date.now(), _fromGoal:true });
+      }
+    });
+    try { localStorage.setItem(_PLAN_STORE, JSON.stringify(all)); } catch {}
+    if (window.__syncKey) window.__syncKey(_PLAN_STORE, JSON.stringify(all));
+    if (dirty) {
+      try { localStorage.setItem('goals:' + date, JSON.stringify(goals)); } catch {}
+      if (window.__syncKey) window.__syncKey('goals:' + date, JSON.stringify(goals));
+    }
+  }
+
   function storeSet(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
     if (typeof key === 'string' && key.indexOf('goals:') === 0) {
       window.dispatchEvent(new CustomEvent('goals-changed'));
+      if (!_goalSyncing && /^goals:\d{4}-\d{2}-\d{2}$/.test(key)) {
+        _goalSyncing = true;
+        try { _syncGoalsToTasks(key.slice(6), Array.isArray(value) ? value : []); }
+        finally { _goalSyncing = false; }
+      }
     }
   }
   function storeDelete(key) { try { localStorage.removeItem(key); } catch (e) {} }
@@ -1482,19 +1556,19 @@ body::after {
 
     function commitSubgoal() {
       const val = inp.value.trim();
+      inp.value = '';
+      addRow.classList.remove('open');
       if (!val) return;
       const cs = getSubgoals();
       cs.push({ text: val, done: false });
       saveSubgoals(cs);
-      inp.value = '';
       if (!subExpanded) { subExpanded = true; if (expandBtn) { expandBtn.textContent = '▾'; subList.classList.remove('is-hidden'); } }
       renderSubrows();
-      inp.focus();
     }
 
     inp.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); commitSubgoal(); }
-      if (e.key === 'Escape') { inp.value = ''; inp.blur(); if (!getSubgoals().length) subList.classList.add('is-hidden'); }
+      if (e.key === 'Escape') { inp.value = ''; addRow.classList.remove('open'); inp.blur(); if (!getSubgoals().length) subList.classList.add('is-hidden'); }
     });
     confirmBtn.addEventListener('click', commitSubgoal);
 
@@ -1502,6 +1576,7 @@ body::after {
       subList.classList.remove('is-hidden');
       subExpanded = true;
       if (expandBtn) expandBtn.textContent = '▾';
+      addRow.classList.add('open');
       inp.focus();
     });
 
@@ -1853,6 +1928,53 @@ body::after {
     document.getElementById('workStripPct').textContent = pct + '% of time awake';
   }
 
+  // ---------- Planned tasks ----------
+  function renderPlanned() {
+    const allTasks = (function(){ try{return JSON.parse(localStorage.getItem('planner:tasks'))||[];}catch{return[];} })();
+    function dKey(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+    const todK = dKey(new Date());
+    const tomD = new Date(); tomD.setDate(tomD.getDate()+1);
+    const tomK = dKey(tomD);
+
+    function fmtT(t) { if(!t)return''; const[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';return(h%12||12)+':'+String(m).padStart(2,'0')+' '+ap; }
+    function fmtTRange(task) { if(!task.time)return''; const s=fmtT(task.time); return task.endTime?s+' – '+fmtT(task.endTime):s; }
+
+    function makeSect(tasks, label) {
+      if (!tasks.length) return null;
+      const frag = document.createDocumentFragment();
+      const hd = document.createElement('div'); hd.className='pl-section-hd'; hd.textContent=label; frag.appendChild(hd);
+      tasks.forEach(task => {
+        const row = document.createElement('div');
+        row.className='pl-row'+(task.done?' pl-done':'');
+        const cb = document.createElement('input'); cb.type='checkbox'; cb.className='pl-check'; cb.checked=!!task.done;
+        cb.addEventListener('change',()=>{
+          const ts=(function(){try{return JSON.parse(localStorage.getItem('planner:tasks'))||[];}catch{return[];}})();
+          const t=ts.find(x=>x.id===task.id); if(t){t.done=cb.checked;localStorage.setItem('planner:tasks',JSON.stringify(ts));if(window.__syncKey)window.__syncKey('planner:tasks',JSON.stringify(ts));}
+          renderPlanned();
+        });
+        row.appendChild(cb);
+        if (task.time) { const te=document.createElement('div');te.className='pl-time';te.textContent=fmtTRange(task);row.appendChild(te); }
+        const tx=document.createElement('div');tx.className='pl-text';tx.textContent=task.text;row.appendChild(tx);
+        frag.appendChild(row);
+      });
+      return frag;
+    }
+
+    function sortTasks(tasks) {
+      return [...tasks].sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; if(a.time&&b.time)return a.time.localeCompare(b.time); if(a.time)return-1; if(b.time)return 1; return 0; });
+    }
+
+    const todayTasks = sortTasks(allTasks.filter(t=>t.date===todK));
+    const tomTasks   = sortTasks(allTasks.filter(t=>t.date===tomK));
+    const card = document.getElementById('plannedCard');
+    card.style.display = (todayTasks.length+tomTasks.length)===0 ? 'none' : '';
+    const todSect = document.getElementById('plannedTodaySection');
+    const tomSect = document.getElementById('plannedTomorrowSection');
+    todSect.innerHTML=''; tomSect.innerHTML='';
+    const tf = makeSect(todayTasks,'Today'); if(tf) todSect.appendChild(tf);
+    const mf = makeSect(tomTasks,'Tomorrow'); if(mf) tomSect.appendChild(mf);
+  }
+
   // ---------- Boot ----------
   rollover();
   processStreak();
@@ -1861,13 +1983,15 @@ body::after {
   renderStreak();
   updateDayRing();
   renderWorkStrip();
+  renderPlanned();
   setInterval(updateDayRing, 60 * 1000);
   setInterval(renderWorkStrip, 60 * 1000);
+  setInterval(renderPlanned, 60000);
   startTicker();
 
   // Re-render when storage changes from another tab (or our bridged parent).
   window.addEventListener('storage', () => {
-    loadToday(); loadTomorrow(); renderStreak(); renderWorkStrip();
+    loadToday(); loadTomorrow(); renderStreak(); renderWorkStrip(); renderPlanned();
   });
 })();
 </script>
@@ -1879,6 +2003,13 @@ document.addEventListener('DOMContentLoaded', function () {
     syncedPrefixes: ['goals:'],
     onApplied: function () {
       window.dispatchEvent(new CustomEvent('goals-changed'));
+      window.dispatchEvent(new Event('storage'));
+    }
+  });
+  initCloudSync({
+    appKey: 'planner',
+    syncedKeys: ['planner:tasks'],
+    onApplied: function () {
       window.dispatchEvent(new Event('storage'));
     }
   });
