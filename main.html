@@ -888,12 +888,6 @@ body::after {
     </div>
   </div>
 
-  <div class="card" id="plannedCard" style="display:none">
-    <div class="card-label" style="font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:12px">Planned</div>
-    <div id="plannedTodaySection"></div>
-    <div id="plannedTomorrowSection"></div>
-  </div>
-
   <div class="section">
     <div class="section-title">To Do List</div>
 
@@ -1928,53 +1922,6 @@ body::after {
     document.getElementById('workStripPct').textContent = pct + '% of time awake';
   }
 
-  // ---------- Planned tasks ----------
-  function renderPlanned() {
-    const allTasks = (function(){ try{return JSON.parse(localStorage.getItem('planner:tasks'))||[];}catch{return[];} })();
-    function dKey(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-    const todK = dKey(new Date());
-    const tomD = new Date(); tomD.setDate(tomD.getDate()+1);
-    const tomK = dKey(tomD);
-
-    function fmtT(t) { if(!t)return''; const[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';return(h%12||12)+':'+String(m).padStart(2,'0')+' '+ap; }
-    function fmtTRange(task) { if(!task.time)return''; const s=fmtT(task.time); return task.endTime?s+' – '+fmtT(task.endTime):s; }
-
-    function makeSect(tasks, label) {
-      if (!tasks.length) return null;
-      const frag = document.createDocumentFragment();
-      const hd = document.createElement('div'); hd.className='pl-section-hd'; hd.textContent=label; frag.appendChild(hd);
-      tasks.forEach(task => {
-        const row = document.createElement('div');
-        row.className='pl-row'+(task.done?' pl-done':'');
-        const cb = document.createElement('input'); cb.type='checkbox'; cb.className='pl-check'; cb.checked=!!task.done;
-        cb.addEventListener('change',()=>{
-          const ts=(function(){try{return JSON.parse(localStorage.getItem('planner:tasks'))||[];}catch{return[];}})();
-          const t=ts.find(x=>x.id===task.id); if(t){t.done=cb.checked;localStorage.setItem('planner:tasks',JSON.stringify(ts));if(window.__syncKey)window.__syncKey('planner:tasks',JSON.stringify(ts));}
-          renderPlanned();
-        });
-        row.appendChild(cb);
-        if (task.time) { const te=document.createElement('div');te.className='pl-time';te.textContent=fmtTRange(task);row.appendChild(te); }
-        const tx=document.createElement('div');tx.className='pl-text';tx.textContent=task.text;row.appendChild(tx);
-        frag.appendChild(row);
-      });
-      return frag;
-    }
-
-    function sortTasks(tasks) {
-      return [...tasks].sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; if(a.time&&b.time)return a.time.localeCompare(b.time); if(a.time)return-1; if(b.time)return 1; return 0; });
-    }
-
-    const todayTasks = sortTasks(allTasks.filter(t=>t.date===todK));
-    const tomTasks   = sortTasks(allTasks.filter(t=>t.date===tomK));
-    const card = document.getElementById('plannedCard');
-    card.style.display = (todayTasks.length+tomTasks.length)===0 ? 'none' : '';
-    const todSect = document.getElementById('plannedTodaySection');
-    const tomSect = document.getElementById('plannedTomorrowSection');
-    todSect.innerHTML=''; tomSect.innerHTML='';
-    const tf = makeSect(todayTasks,'Today'); if(tf) todSect.appendChild(tf);
-    const mf = makeSect(tomTasks,'Tomorrow'); if(mf) tomSect.appendChild(mf);
-  }
-
   // ---------- Boot ----------
   rollover();
   processStreak();
@@ -1983,15 +1930,13 @@ body::after {
   renderStreak();
   updateDayRing();
   renderWorkStrip();
-  renderPlanned();
   setInterval(updateDayRing, 60 * 1000);
   setInterval(renderWorkStrip, 60 * 1000);
-  setInterval(renderPlanned, 60000);
   startTicker();
 
   // Re-render when storage changes from another tab (or our bridged parent).
   window.addEventListener('storage', () => {
-    loadToday(); loadTomorrow(); renderStreak(); renderWorkStrip(); renderPlanned();
+    loadToday(); loadTomorrow(); renderStreak(); renderWorkStrip();
   });
 })();
 </script>
